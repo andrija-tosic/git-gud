@@ -1,14 +1,19 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { IsNotEmpty } from 'class-validator';
 import { HydratedDocument, Types } from 'mongoose';
+import { Tag } from '../types';
 import { Difficulty } from '../types/difficulty.enum';
 import { Submission, SubmissionSchema } from './submission.schema';
 import { TestCase, TestCaseSchema } from './testcase.schema';
 
 export type ProblemDocument = HydratedDocument<Problem>;
 
-@Schema()
+@Schema({ timestamps: true })
 export class Problem {
+  @IsNotEmpty()
+  @Prop({ required: true })
+  title: string;
+
   @IsNotEmpty()
   @Prop({ required: true })
   text: string;
@@ -19,7 +24,11 @@ export class Problem {
 
   @IsNotEmpty()
   @Prop({ type: Number, enum: Difficulty, required: true })
-  difficulty: number;
+  difficulty: Difficulty;
+
+  @IsNotEmpty()
+  @Prop({ type: [String], enum: Tag, required: true })
+  tags: Tag[];
 
   @Prop({ type: Number, default: 0 })
   helpfulCount: number;
@@ -36,3 +45,7 @@ export class Problem {
 }
 
 export const ProblemSchema = SchemaFactory.createForClass(Problem);
+
+ProblemSchema.index({ title: 'text' });
+ProblemSchema.index({ difficulty: 1 });
+ProblemSchema.index({ tags: 1 });

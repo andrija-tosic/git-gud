@@ -15,3 +15,10 @@ export type Judge0SubmissionRequest = {
   max_file_size?: number;
   enable_network?: boolean;
 };
+
+// export interface Judge0SubmissionRequestBase64
+//   extends Omit<Judge0SubmissionRequest, 'source_code' | 'stdin' | 'expected_output'> {
+//   source_code: Buffer;
+//   stdin: Buffer;
+//   expected_output: Buffer;
+// }

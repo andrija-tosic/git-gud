@@ -1,3 +1,3 @@
-import { Problem } from '@git-gud/entities';
+import { Problem } from '../schemas';
 
 export class CreateProblemDto extends Problem {}

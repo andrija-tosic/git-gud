@@ -1,0 +1,17 @@
+<ng-container *ngIf="this.loggedInUser$ | async as user">
+  <p-menubar>
+    <ng-template pTemplate="start">
+      <button pButton class="p-button-outlined" label="git gud" [routerLink]="['/home']"></button>
+    </ng-template>
+    <ng-template pTemplate="end">
+      <button
+        pButton
+        class="p-button-outlined"
+        icon="pi pi-user"
+        label="Profile"
+        [routerLink]="['/user/' + user._id]"
+      ></button>
+    </ng-template>
+  </p-menubar>
+  <router-outlet></router-outlet>
+</ng-container>

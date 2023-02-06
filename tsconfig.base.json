@@ -16,7 +16,8 @@
     "baseUrl": ".",
     "paths": {
       "@git-gud/entities": ["libs/entities/src/index.ts"]
-    }
+    },
+    "strictPropertyInitialization": false
   },
   "exclude": ["node_modules", "tmp"]
 }
