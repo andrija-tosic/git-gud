@@ -5,6 +5,7 @@ export class TestResult {
   testCase: Types.ObjectId;
   status: Judge0SubmissionStatus;
   output: string;
+  stderr: string;
   time: string;
   memory: number;
   message?: string;

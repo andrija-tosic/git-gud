@@ -14,7 +14,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, Model, Types } from 'mongoose';
 import { CreateSubmissionDto, UpdateSubmissionDto, CreateProblemDto, UpdateProblemDto } from '@git-gud/entities';
 import { HttpService } from '@nestjs/axios';
-import { filter, map, repeat, from, switchMap, take, defer, catchError } from 'rxjs';
+import { filter, map, repeat, from, switchMap, take, defer, catchError, lastValueFrom, firstValueFrom } from 'rxjs';
 import { JUDGE0_API } from '../constants';
 
 @Injectable()
@@ -49,7 +49,7 @@ export class ProblemService {
     return this.problemModel.findByIdAndDelete(id);
   }
 
-  makeSubmission(
+  async makeSubmission(
     id: string,
     submissionId: string | null,
     submissionDto: CreateSubmissionDto | UpdateSubmissionDto,
@@ -59,113 +59,103 @@ export class ProblemService {
       submissionId = new Types.ObjectId().toString();
     }
 
-    const testCases = defer(() =>
-      from(this.problemModel.findById<{ testCases: TestCaseDocument[] }>(id, { testCases: true }))
+    console.log(id, submissionDto);
+
+    const { testCases } = await this.problemModel
+      .findById<{ testCases: TestCaseDocument[] }>(id, { testCases: true })
+      .exec();
+
+    const judge0Submissions = testCases.map(
+      (testCase) =>
+        ({
+          source_code: Buffer.from(submissionDto.code, 'ascii').toString('base64'),
+          language_id: submissionDto.programmingLanguage,
+          stdin: Buffer.from(testCase.input, 'ascii').toString('base64'),
+          expected_output: Buffer.from(testCase.desiredOutput, 'ascii').toString('base64'),
+          cpu_time_limit: testCase.cpuTimeLimit,
+          memory_limit: testCase.memoryUsageLimit,
+        } as Judge0SubmissionRequest)
     );
 
-    return testCases.pipe(
-      map((result) => result.testCases),
-      switchMap((testCases) => {
-        this.logger.log(
-          testCases.map(
-            (testCase) =>
-              ({
-                source_code: Buffer.from(submissionDto.code, 'ascii').toString('base64'),
-                language_id: submissionDto.programmingLanguage,
-                stdin: Buffer.from(testCase.input, 'ascii').toString('base64'),
-                expected_output: Buffer.from(testCase.desiredOutput, 'ascii').toString('base64'),
-                cpu_time_limit: testCase.cpuTimeLimit,
-                memory_limit: testCase.memoryUsageLimit,
-              } as Judge0SubmissionRequest)
-          ),
-          'Sending submissions to Judge0'
-        );
-        return this.http
-          .post<Judge0TokenResponse[]>(JUDGE0_API + '/submissions/batch?base64_encoded=true', {
-            submissions: testCases.map(
-              (testCase) =>
-                ({
-                  source_code: Buffer.from(submissionDto.code, 'ascii').toString('base64'),
-                  language_id: submissionDto.programmingLanguage,
-                  stdin: Buffer.from(testCase.input, 'ascii').toString('base64'),
-                  expected_output: Buffer.from(testCase.desiredOutput, 'ascii').toString('base64'),
-                  cpu_time_limit: 0, // TODO: testCase.cpuTimeLimit,
-                  memory_limit: testCase.memoryUsageLimit,
-                } as Judge0SubmissionRequest)
-            ),
+    // this.logger.log('Sending submissions to Judge0', judge0Submissions);
+
+    const { data: tokenResponses } = await lastValueFrom(
+      this.http
+        .post<Judge0TokenResponse[]>(JUDGE0_API + '/submissions/batch?base64_encoded=true', {
+          submissions: judge0Submissions,
+        })
+        .pipe(
+          catchError((e) => {
+            // console.log(e);
+            // this.logger.error(e.response.data, e.response.status);
+            throw new HttpException(e.response.data, e.response.status);
           })
-          .pipe(
-            map((axiosResponse) => ({
-              axiosResponse,
-              testCases,
-            })),
-            catchError((e) => {
-              this.logger.error(e);
-              this.logger.error(e.response.data, e.response.status);
-              throw new HttpException(e.response.data, e.response.status);
-            })
-          );
-      }),
-      map(({ axiosResponse, testCases }) => {
-        return { tokens: axiosResponse.data.map((res) => res.token), testCases };
-      }),
-      switchMap(({ tokens, testCases }) =>
-        this.http
-          .get<{ submissions: Judge0SubmissionResponse[] }>(
-            JUDGE0_API + '/submissions/batch?tokens=' + tokens.join(',') + '&base64_encoded=true'
-          )
-          .pipe(
-            repeat({ delay: 1500 }),
-            filter((results) => {
-              this.logger.log(
-                results.data.submissions.map((res) => res.status),
-                'Judge0 submission status'
-              );
-              return results.data.submissions.every(
-                (result) =>
-                  result.status.id !== Judge0SubmissionStatus.InQueue &&
-                  result.status.id !== Judge0SubmissionStatus.Processing
-              );
-            }),
-            take(1),
-            map((axiosResponse) => ({ axiosResponse, testCases })),
-            catchError((e) => {
-              this.logger.error(e.response?.data, e.response?.status);
-              throw new HttpException(e.response?.data, e.response?.status);
-            })
-          )
-      ),
-      map(({ axiosResponse, testCases }) => ({ response: axiosResponse.data, testCases })),
-      switchMap(({ response, testCases }) => {
-        console.log('response.submissions', response.submissions);
-
-        submissionDto.testResults = response.submissions.map(
-          (submissionResponse, index) =>
-            ({
-              testCase: new Types.ObjectId(testCases[index]._id),
-              status: submissionResponse.status.id,
-              time: submissionResponse.time,
-              memory: submissionResponse.memory,
-              message: submissionResponse.message,
-              output: submissionResponse.stdout
-                ? Buffer.from(submissionResponse.stdout, 'base64').toString('ascii')
-                : null,
-              compileOutput: submissionResponse.compile_output
-                ? decodeURIComponent(Buffer.from(submissionResponse.compile_output, 'base64').toString('ascii'))
-                : null,
-              cpuTimeLimitExceeded: Number(submissionResponse.time) > testCases[index].cpuTimeLimit,
-              memoryLimitExceeded: submissionResponse.memory > testCases[index].memoryUsageLimit,
-            } as TestResult)
-        );
-
-        const problemDoc =
-          createOrUpdate === 'Create'
-            ? this.findProblemForSubmissionCreate(id, submissionId, submissionDto)
-            : this.findProblemForSubmissionUpdate(id, submissionId, submissionDto);
-
-        return defer(() => from(problemDoc));
-      })
+        )
     );
+
+    const tokens = tokenResponses.map((res) => res.token);
+
+    const {
+      data: { submissions: submissionResults },
+    } = await lastValueFrom(
+      this.http
+        .get<{ submissions: Judge0SubmissionResponse[] }>(
+          JUDGE0_API + '/submissions/batch?tokens=' + tokens.join(',') + '&base64_encoded=true'
+        )
+        .pipe(
+          repeat({ delay: 1500 }),
+          filter((res) => {
+            const {
+              data: { submissions },
+            } = res;
+            this.logger.log('Judge0 submission status', submissions);
+            return submissions.every(
+              (submission) =>
+                submission.status.id !== Judge0SubmissionStatus.InQueue &&
+                submission.status.id !== Judge0SubmissionStatus.Processing
+            );
+          }),
+          take(1),
+          catchError((e) => {
+            console.log(e);
+            // this.logger.error(e.response?.data, e.response?.status);
+            throw new HttpException(e.response?.data, e.response?.status);
+          })
+        )
+    );
+
+    console.log('submissions', submissionResults);
+
+    submissionDto.testResults = submissionResults.map(
+      (submissionResponse, index) =>
+        ({
+          testCase: new Types.ObjectId(testCases[index]._id),
+          status: submissionResponse.status.id,
+          time: submissionResponse.time,
+          memory: submissionResponse.memory,
+          message: submissionResponse.message
+            ? Buffer.from(submissionResponse.message, 'base64').toString('ascii')
+            : null,
+          output: submissionResponse.stdout ? Buffer.from(submissionResponse.stdout, 'base64').toString('ascii') : null,
+          stderr: submissionResponse.stderr ? Buffer.from(submissionResponse.stderr, 'base64').toString('ascii') : null,
+          compileOutput: submissionResponse.compile_output
+            ? decodeURIComponent(Buffer.from(submissionResponse.compile_output, 'base64').toString('ascii'))
+            : null,
+          cpuTimeLimitExceeded: testCases[index].cpuTimeLimit
+            ? Number(submissionResponse.time) > testCases[index].cpuTimeLimit
+            : false,
+          memoryLimitExceeded: testCases[index].memoryUsageLimit
+            ? submissionResponse.memory > testCases[index].memoryUsageLimit
+            : false,
+        } as TestResult)
+    );
+
+    const problemDoc =
+      createOrUpdate === 'Create'
+        ? this.findProblemForSubmissionCreate(id, submissionId, submissionDto)
+        : this.findProblemForSubmissionUpdate(id, submissionId, submissionDto);
+
+    return problemDoc;
   }
 
   private findProblemForSubmissionCreate(id: string, submissionId: string, submissionDto: CreateSubmissionDto) {

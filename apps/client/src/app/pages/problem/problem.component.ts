@@ -1,9 +1,10 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable no-useless-escape */
 import { Component } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Problem, ProgrammingLanguage, Submission, User } from '@git-gud/entities';
-import { BehaviorSubject, combineLatest, filter, map, merge, Observable, Subject, take, takeUntil, tap } from 'rxjs';
+import { ConfirmationService, ConfirmEventType, MessageService } from 'primeng/api';
+import { BehaviorSubject, combineLatest, filter, map, Observable } from 'rxjs';
 import { ProblemService } from '../../services/problem.service';
 import { UserService } from '../../services/user.service';
 
@@ -21,16 +22,16 @@ import { UserService } from '../../services/user.service';
       }
     `,
   ],
+  providers: [ConfirmationService, MessageService],
 })
 export class ProblemComponent {
-  problem$ = new BehaviorSubject<Problem | null>(null);
+  problem$ = this.problemService.selectedProblem$;
 
   currentSubmission$: Observable<Submission | undefined>;
 
   user$ = this.userService.loggedInUser$;
 
-  editorOptions = { theme: 'vs-dark', language: 'javascript' };
-  code = 'function x() {\nconsole.log("Hello world!");\n}';
+  code = '';
 
   loading = false;
 
@@ -69,7 +70,10 @@ public class Program
       id: 62,
       name: 'Java',
       codeTemplate: `
-class Program {
+import java.util.Scanner;
+
+class Main {
+
   public static void main(String[] args) {
     Scanner scanner = new Scanner(System.in);
     String s = scanner.nextLine();
@@ -82,18 +86,15 @@ class Program {
       id: 63,
       name: 'JavaScript',
       codeTemplate: `
-process.openStdin().on (
-  'data',
-  function (line) {
-      console.log(line);  
-    
-      process.exit();
-  }
-)`,
+const fs = require('fs');
+const data = fs.readFileSync(0, 'utf-8');
+
+console.log(data);  
+`,
     },
   ];
 
-  selectedLanguage = this.languages[0];
+  selectedLanguage$ = new BehaviorSubject<ProgrammingLanguage>(this.languages[1]);
 
   codemirrorOptions = {
     lineNumbers: true,
@@ -101,10 +102,25 @@ process.openStdin().on (
     extraKeys: {
       'Ctrl-Space': 'autocomplete',
     },
-    mode: this.selectedLanguage.name.toLowerCase(),
+    mode: this.languages[0].name.toLowerCase(),
   };
 
-  constructor(private problemService: ProblemService, private userService: UserService, private route: ActivatedRoute) {
+  readonly codemirrorMarkdownOptions = {
+    lineNumbers: false,
+    theme: 'nord',
+    mode: 'markdown',
+    readOnly: true,
+    lineWrapping: true,
+  };
+
+  constructor(
+    private problemService: ProblemService,
+    private userService: UserService,
+    private route: ActivatedRoute,
+    public router: Router,
+    private confirmationService: ConfirmationService,
+    private messageService: MessageService
+  ) {
     this.route.paramMap.subscribe((paramMap) => {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const id = paramMap.get('id')!;
@@ -113,42 +129,42 @@ process.openStdin().on (
       });
     });
 
-    combineLatest([this.problem$, this.user$])
-      .pipe(
-        filter((problemAndUser) => problemAndUser[0] !== null && problemAndUser[1] !== null),
-        take(1)
-      )
-      .subscribe(([problem, user]) => {
-        this.changeCodeTemplate(problem!, user!);
+    combineLatest([this.problem$, this.user$, this.selectedLanguage$])
+      .pipe(filter((problemAndUser) => problemAndUser[0] !== null && problemAndUser[1] !== null))
+      .subscribe(([problem, user, selectedLanguage]) => {
+        this.languages = this.languages.filter((l) => problem!.programmingLanguagesIds.includes(l.id));
+
+        this.changeCodeTemplate(problem!, user!, selectedLanguage);
 
         this.currentSubmission$ = this.problem$.pipe(
-          map((problem) =>
-            problem?.submissions.find((s) => {
-              return s.author === user!._id && s.programmingLanguage === this.selectedLanguage.id;
-            })
-          )
+          map((problem) => {
+            const submission = problem?.submissions.find((s) => {
+              return s.author === user!._id && s.programmingLanguage === selectedLanguage.id;
+            });
+
+            return submission;
+          })
         );
       });
   }
 
-  changeCodeTemplate(problem: Problem, user: User) {
+  changeCodeTemplate(problem: Problem, user: User, selectedLanguage: ProgrammingLanguage) {
     const userSubmission = problem.submissions.find((s) => {
-      return s.author === user._id && s.programmingLanguage === this.selectedLanguage.id;
+      return s.author === user._id && s.programmingLanguage === selectedLanguage.id;
     });
 
     if (userSubmission) {
       this.code = userSubmission.code;
     } else {
-      this.code = this.languages.find((l) => l.id === this.selectedLanguage.id)!.codeTemplate;
+      this.code = this.languages.find((l) => l.id === selectedLanguage.id)!.codeTemplate;
     }
-    this.editorOptions.language = this.selectedLanguage.name;
-    this.codemirrorOptions.mode = this.selectedLanguage.name.toLowerCase();
+    this.codemirrorOptions.mode = selectedLanguage.name.toLowerCase();
   }
 
-  submitCode(problem: Problem, user: User) {
+  submitCode(problem: Problem, user: User, selectedLanguage: ProgrammingLanguage) {
     this.loading = true;
     const userSubmission = problem.submissions.find((s) => {
-      return s.author === user._id && s.programmingLanguage === this.selectedLanguage.id;
+      return s.author === user._id && s.programmingLanguage === selectedLanguage.id;
     });
 
     if (userSubmission) {
@@ -156,10 +172,11 @@ process.openStdin().on (
         .updateSubmission(problem._id, userSubmission._id, {
           author: user._id!,
           code: this.code,
-          programmingLanguage: this.selectedLanguage.id,
+          programmingLanguage: selectedLanguage.id,
         })
-        .subscribe((updatedProblem) => {
-          this.problem$.next(updatedProblem);
+        .subscribe((_) => {
+          // this.problem$.next(updatedProblem);
+          console.log(_.submissions);
 
           this.loading = false;
         });
@@ -168,13 +185,35 @@ process.openStdin().on (
         .createSubmission(problem._id, {
           author: user._id!,
           code: this.code,
-          programmingLanguage: this.selectedLanguage.id,
+          programmingLanguage: selectedLanguage.id,
         })
-        .subscribe((updatedProblem) => {
-          this.problem$.next(updatedProblem);
+        .subscribe((_) => {
+          // this.problem$.next(updatedProblem);
 
           this.loading = false;
         });
     }
+  }
+
+  deleteProblem(problem: Problem) {
+    this.confirmationService.confirm({
+      message: `Are you sure you want to delete problem "${problem.title}"?`,
+      header: 'Delete Confirmation',
+      icon: 'pi pi-info-circle',
+      accept: () => {
+        this.messageService.add({ severity: 'info', summary: 'Confirmed', detail: 'Problem deleted' });
+        this.problemService.deleteProblem(problem._id).subscribe((_p) => this.router.navigate(['/']));
+      },
+      reject: (type: ConfirmEventType) => {
+        switch (type) {
+          case ConfirmEventType.REJECT:
+            this.messageService.add({ severity: 'error', summary: 'Rejected', detail: 'You have rejected' });
+            break;
+          case ConfirmEventType.CANCEL:
+            this.messageService.add({ severity: 'warn', summary: 'Cancelled', detail: 'You have cancelled' });
+            break;
+        }
+      },
+    });
   }
 }

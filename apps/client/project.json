@@ -20,8 +20,8 @@
         "styles": ["apps/client/src/styles.scss",
           "node_modules/quill/dist/quill.core.css",
           "node_modules/quill/dist/quill.snow.css",
-          "node_modules/codemirror/addon/hint/show-hint.css",],
-        "scripts": ["node_modules/quill/dist/quill.js"]
+          "node_modules/codemirror/addon/hint/show-hint.css"],
+        "scripts": ["node_modules/quill/dist/quill.js", "node_modules/marked/marked.min.js"]
 
       },
       "configurations": {

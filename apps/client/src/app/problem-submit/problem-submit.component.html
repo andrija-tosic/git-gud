@@ -1,0 +1,120 @@
+<form (ngSubmit)="onConfirm()" [formGroup]="form">
+  <label for="title" class="block text-900 font-medium mb-2">Title</label>
+  <input id="title" formControlName="title" type="text" placeholder="Title" pInputText class="w-full mb-3" />
+
+  <h3>Programming languages</h3>
+  <p-selectButton
+    [options]="languages"
+    formControlName="programmingLanguagesIds"
+    [multiple]="true"
+    optionLabel="name"
+    optionValue="id"
+  ></p-selectButton>
+
+  <h3>Difficulty</h3>
+  <p-selectButton
+    [options]="difficulties"
+    formControlName="difficulty"
+    optionLabel="name"
+    optionValue="value"
+  ></p-selectButton>
+
+  <h3>Tags</h3>
+  <p-selectButton
+    [options]="tags"
+    formControlName="tags"
+    [multiple]="true"
+    optionLabel="name"
+    optionValue="value"
+  ></p-selectButton>
+
+  <p>Text</p>
+  <ngx-codemirror formControlName="text" [options]="this.codemirrorOptions"></ngx-codemirror>
+
+  <h3>Test cases</h3>
+  <ng-container formArrayName="testCases">
+    <ng-container *ngFor="let testCaseForm of $any(this.form?.get('testCases')).controls; let i = index">
+      <ng-container [formGroupName]="i">
+        <h4>
+          Testcase {{ i + 1 }}
+          <p-button
+            label="Remove testcase"
+            icon="pi pi-minus"
+            iconPos="right"
+            class="p-button-outlined"
+            (click)="removeTestCase(i)"
+          ></p-button>
+        </h4>
+
+        <label for="input" class="block text-900 font-medium mb-2">Input</label>
+        <input
+          required
+          id="input"
+          formControlName="input"
+          type="text"
+          placeholder="Input"
+          pInputText
+          class="w-full mb-3"
+        />
+
+        <label for="desiredOutput" class="block text-900 font-medium mb-2">Expected output</label>
+        <input
+          required
+          id="desiredOutput"
+          formControlName="desiredOutput"
+          type="text"
+          placeholder="Expected output"
+          pInputText
+          class="w-full mb-3"
+        />
+
+        <label for="explanation" class="block text-900 font-medium mb-2">Explanation</label>
+        <input
+          id="explanation"
+          formControlName="explanation"
+          type="text"
+          placeholder="Explanation"
+          pInputText
+          class="w-full mb-3"
+        />
+
+        <label for="explanation" class="block text-900 font-medium mb-2">CPU time limit</label>
+        <input
+          id="cpuTimeLimit"
+          formControlName="cpuTimeLimit"
+          type="number"
+          min="1"
+          max="60"
+          placeholder="CPU time limit"
+          pInputText
+          class="w-full mb-3"
+        />
+
+        <label for="memoryUsageLimit" class="block text-900 font-medium mb-2">Memory usage limit</label>
+        <input
+          id="memoryUsageLimit"
+          formControlName="memoryUsageLimit"
+          type="number"
+          min="2048"
+          value="16384"
+          max="2000000"
+          placeholder="Memory usage limit"
+          pInputText
+          class="w-full mb-3"
+        />
+      </ng-container>
+    </ng-container>
+
+    <p-button
+      label="Add testcase"
+      icon="pi pi-plus"
+      iconPos="right"
+      class="p-button-outlined"
+      (click)="addTestCase()"
+    ></p-button>
+  </ng-container>
+
+  <div>
+    <button pButton label="Submit"></button>
+  </div>
+</form>

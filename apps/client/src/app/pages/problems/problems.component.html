@@ -3,7 +3,8 @@
   <h3>Tags</h3>
   <p-selectButton
     [options]="tags"
-    [(ngModel)]="selectedTags"
+    [ngModel]="selectedTags$ | async"
+    (ngModelChange)="selectedTags$.next($event)"
     [multiple]="true"
     optionLabel="name"
     optionValue="value"
@@ -13,7 +14,8 @@
     <div class="flex justify-content-between">
       <p-selectButton
         [options]="difficulties"
-        [(ngModel)]="selectedDifficulties"
+        [ngModel]="selectedDifficulties$ | async"
+        (ngModelChange)="selectedDifficulties$.next($event)"
         [multiple]="true"
         optionLabel="name"
         optionValue="value"
@@ -26,7 +28,6 @@
           type="text"
           pInputText
           placeholder="Search"
-          [(ngModel)]="searchValue"
         />
       </span>
     </div>
@@ -39,12 +40,6 @@
       <tr>
         <th pSortableColumn="title" style="width: 20%">Title <p-sortIcon field="title"></p-sortIcon></th>
         <th pSortableColumn="difficulty" style="width: 20%">Difficulty <p-sortIcon field="difficulty"></p-sortIcon></th>
-        <th pSortableColumn="helpfulCount" style="width: 20%">
-          Helpful <p-sortIcon field="helpfulCount"></p-sortIcon>
-        </th>
-        <th pSortableColumn="unhelpfulCount" style="width: 20%">
-          Unhelpful <p-sortIcon field="unhelpfulCount"></p-sortIcon>
-        </th>
       </tr>
     </ng-template>
     <ng-template pTemplate="body" let-problem>
@@ -55,8 +50,6 @@
           </button>
         </td>
         <td>{{ problem.difficulty | problemDifficulty }}</td>
-        <td>{{ problem.helpfulCount }}</td>
-        <td>{{ problem.unhelpfulCount }}</td>
       </tr>
     </ng-template>
   </p-table>

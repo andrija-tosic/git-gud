@@ -6,6 +6,8 @@ export type TestCaseDocument = HydratedDocument<TestCase>;
 
 @Schema()
 export class TestCase {
+  _id: string;
+
   @IsNotEmpty()
   @Prop({ required: true })
   input: string;

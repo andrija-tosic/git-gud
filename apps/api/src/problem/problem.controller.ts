@@ -40,33 +40,33 @@ export class ProblemController {
     @Body() createSubmissionDto: CreateSubmissionDto,
     @Res() res: Response
   ) {
-    return this.problemService.makeSubmission(id, null, createSubmissionDto, 'Create').pipe(
-      tap((problem) => {
-        if (!problem) {
-          res.status(HttpStatus.NOT_FOUND).send();
-        } else {
-          res.send(problem);
-        }
-      })
-    );
+    const problem = await this.problemService.makeSubmission(id, null, createSubmissionDto, 'Create');
+
+    console.log(problem);
+
+    if (!problem) {
+      res.status(HttpStatus.NOT_FOUND).send();
+    } else {
+      res.send(problem);
+    }
   }
 
   @Patch(':id/submissions/:submissionId')
-  updateSubmission(
+  async updateSubmission(
     @Param('id') id: string,
     @Param('submissionId') submissionId: string,
     @Body() updateSubmissionDto: UpdateSubmissionDto,
     @Res() res: Response
   ) {
-    return this.problemService.makeSubmission(id, submissionId, updateSubmissionDto, 'Update').pipe(
-      tap((problem) => {
-        if (!problem) {
-          res.status(HttpStatus.NOT_FOUND).send();
-        } else {
-          res.send(problem);
-        }
-      })
-    );
+    const problem = await this.problemService.makeSubmission(id, submissionId, updateSubmissionDto, 'Update');
+
+    console.log(problem);
+
+    if (!problem) {
+      res.status(HttpStatus.NOT_FOUND).send();
+    } else {
+      res.send(problem);
+    }
   }
 
   @Delete(':id/submissions/:submissionId')
@@ -88,30 +88,5 @@ export class ProblemController {
   @Post('/search/random')
   randomProblem(@Body() searchFilters: ProblemSearchFilters) {
     return this.problemService.randomProblem(searchFilters);
-  }
-
-  @Post(':id/upvote')
-  upvoteProblem(@Param('id') id: string) {
-    return this.problemService.upvoteProblem(id);
-  }
-
-  @Delete(':id/upvote')
-  removeProblemUpvote(@Param('id') id: string) {
-    return this.problemService.removeProblemUpvote(id);
-  }
-
-  @Post(':id/downvote')
-  downvoteProblem(@Param('id') id: string) {
-    return this.problemService.downvoteProblem(id);
-  }
-
-  @Delete(':id/downvote')
-  removeProblemDownvote(@Param('id') id: string) {
-    return this.problemService.removeProblemDownvote(id);
-  }
-
-  @Get(':id/solutions')
-  problemSolutions(@Param('id') id: string) {
-    return this.problemService.problemSolutions(id);
   }
 }

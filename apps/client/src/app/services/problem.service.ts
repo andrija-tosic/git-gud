@@ -9,9 +9,8 @@ import {
   UpdateProblemDto,
   UpdateSubmissionDto,
 } from '@git-gud/entities';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, tap } from 'rxjs';
 import { API_URL, HTTP_OPTIONS } from '../constants';
-import { ProgrammingLanguage } from '@git-gud/entities';
 
 @Injectable({
   providedIn: 'root',
@@ -19,42 +18,48 @@ import { ProgrammingLanguage } from '@git-gud/entities';
 export class ProblemService {
   public selectedProblem$ = new BehaviorSubject<Problem | null>(null);
 
-  // public languages: ProgrammingLanguage[] = [];
-
-  constructor(private http: HttpClient) {
-    // this.getLanguages().subscribe((languages) => (this.languages = languages));
-  }
+  constructor(private http: HttpClient) {}
 
   getProblem(id: string) {
-    return this.http.get<Problem>(API_URL + '/problems/' + id);
+    return this.http
+      .get<Problem>(API_URL + '/problems/' + id)
+      .pipe(tap((problem) => this.selectedProblem$.next(problem)));
   }
-
-  // getLanguages() {
-  // return this.http.get<ProgrammingLanguage[]>('http://localhost:2358/languages');
-  // }
 
   createProblem(dto: CreateProblemDto) {
-    return this.http.post<Problem>(API_URL + '/problems/', dto, HTTP_OPTIONS);
+    return this.http
+      .post<Problem>(API_URL + '/problems/', dto, HTTP_OPTIONS)
+      .pipe(tap((problem) => this.selectedProblem$.next(problem)));
   }
 
-  updateProblem(dto: UpdateProblemDto) {
-    return this.http.patch<Problem>(API_URL + '/problems/', dto, HTTP_OPTIONS);
+  updateProblem(id: string, dto: UpdateProblemDto) {
+    return this.http
+      .patch<Problem>(API_URL + '/problems/' + id, dto, HTTP_OPTIONS)
+      .pipe(tap((problem) => this.selectedProblem$.next(problem)));
   }
 
   deleteProblem(id: string) {
-    return this.http.delete<Problem>(API_URL + '/problems/' + id);
+    return this.http
+      .delete<Problem>(API_URL + '/problems/' + id)
+      .pipe(tap((problem) => this.selectedProblem$.next(problem)));
   }
 
   createSubmission(id: string, dto: CreateSubmissionDto) {
-    return this.http.post<Problem>(API_URL + '/problems/' + id + '/submissions/', dto, HTTP_OPTIONS);
+    return this.http
+      .post<Problem>(API_URL + '/problems/' + id + '/submissions/', dto, HTTP_OPTIONS)
+      .pipe(tap((problem) => this.selectedProblem$.next(problem)));
   }
 
   updateSubmission(id: string, submissionId: string, dto: UpdateSubmissionDto) {
-    return this.http.patch<Problem>(API_URL + '/problems/' + id + '/submissions/' + submissionId, dto, HTTP_OPTIONS);
+    return this.http
+      .patch<Problem>(API_URL + '/problems/' + id + '/submissions/' + submissionId, dto, HTTP_OPTIONS)
+      .pipe(tap((problem) => this.selectedProblem$.next(problem)));
   }
 
   removeSubmission(id: string, submissionId: string) {
-    return this.http.delete<Problem>(API_URL + '/problems/' + id + '/submissions/' + submissionId);
+    return this.http
+      .delete<Problem>(API_URL + '/problems/' + id + '/submissions/' + submissionId)
+      .pipe(tap((problem) => this.selectedProblem$.next(problem)));
   }
 
   searchProblems(problemFilters: ProblemSearchFilters) {

@@ -15,6 +15,8 @@ export class SubmissionStatusPipe implements PipeTransform {
         return 'Wrong answer 🚫';
       case 6:
         return 'Compilation error ⚠️';
+      case 11:
+        return 'Runtime Error ⚠️';
       default:
         return '';
     }

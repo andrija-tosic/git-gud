@@ -4,4 +4,5 @@ export enum Judge0SubmissionStatus {
   Accepted = 3,
   WrongAnswer = 4,
   CompilationError = 6,
+  RuntimeError = 11,
 }

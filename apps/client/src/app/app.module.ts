@@ -4,8 +4,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
-import { FormsModule } from '@angular/forms';
-import { HomeComponent } from './pages/home/home.component';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { LoginComponent } from './pages/login/login.component';
 import { NavigationComponent } from './pages/navigation/navigation.component';
 import { RegisterComponent } from './pages/register/register.component';
@@ -27,12 +26,15 @@ import { DropdownModule } from 'primeng/dropdown';
 import { CodemirrorModule } from '@ctrl/ngx-codemirror';
 import { SubmissionStatusPipe } from './pipes/submission-status.pipe';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { ProblemSubmitComponent } from './problem-submit/problem-submit.component';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { MarkdownModule } from 'ngx-markdown';
+import { MessageErrorStatusPipe } from './pipes/message-error-status.pipe';
 
 @NgModule({
   declarations: [
     AppComponent,
     LoginComponent,
-    HomeComponent,
     RegisterComponent,
     NavigationComponent,
     ProblemsComponent,
@@ -40,6 +42,8 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
     ProblemComponent,
     ProblemDifficultyPipe,
     SubmissionStatusPipe,
+    ProblemSubmitComponent,
+    MessageErrorStatusPipe,
   ],
   imports: [
     BrowserModule,
@@ -58,6 +62,9 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
     DropdownModule,
     CodemirrorModule,
     ProgressSpinnerModule,
+    ReactiveFormsModule,
+    ConfirmDialogModule,
+    MarkdownModule.forRoot(),
   ],
   providers: [],
   bootstrap: [AppComponent],

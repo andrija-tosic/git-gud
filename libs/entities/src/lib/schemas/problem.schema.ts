@@ -32,12 +32,6 @@ export class Problem {
   @Prop({ type: [String], enum: Tag, required: true })
   tags: (typeof Tag)[];
 
-  @Prop({ type: Number, default: 0 })
-  helpfulCount: number;
-
-  @Prop({ type: Number, default: 0 })
-  unhelpfulCount: number;
-
   @IsNotEmpty()
   @Prop({ type: [TestCaseSchema], required: true })
   testCases: Types.Array<TestCase>;

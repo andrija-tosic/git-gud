@@ -14,7 +14,12 @@ body {
   color: var(--text-color);
 }
 
-code,
-.CodeMirror {
-  font-size: 1.2em;
+button,
+.p-button {
+  font-family: monospace !important;
+}
+
+ngx-codemirror {
+  margin: 1em;
+  border-radius: 10px;
 }

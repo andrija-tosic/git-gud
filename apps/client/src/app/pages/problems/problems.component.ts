@@ -2,6 +2,7 @@ import { Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
 import { Problem, ProblemSearchFilters, Tag } from '@git-gud/entities';
 import {
   BehaviorSubject,
+  combineLatest,
   debounceTime,
   distinctUntilChanged,
   filter,
@@ -46,12 +47,11 @@ export class ProblemsComponent implements OnDestroy {
     { name: 'Hard', value: 2 },
   ];
 
-  selectedTags: (typeof Tag)[] = [];
-  selectedDifficulties: number[] = [];
-  searchValue: string;
+  selectedTags$ = new BehaviorSubject<(typeof Tag)[]>([]);
+  selectedDifficulties$ = new BehaviorSubject<number[]>([]);
 
   @ViewChild('searchInput') input: ElementRef;
-  public searchValueChanges$ = new Subject<string>();
+  public searchValueChanges$ = new BehaviorSubject<string>('');
 
   destroy$ = new Subject();
 
@@ -60,16 +60,17 @@ export class ProblemsComponent implements OnDestroy {
       this.problems$.next(problems);
     });
 
-    this.searchValueChanges$
+    combineLatest([this.searchValueChanges$, this.selectedDifficulties$, this.selectedTags$])
       .pipe(
         debounceTime(300),
         distinctUntilChanged(),
-        filter((text) => !!text),
-        map((text) => {
+        map(([text, difficulties, tags]) => {
+          console.log([text, difficulties, tags]);
+
           return <ProblemSearchFilters>{
             title: text.trim(),
-            difficulties: this.selectedDifficulties,
-            tags: this.selectedTags,
+            difficulties: difficulties,
+            tags: tags,
           };
         }),
         takeUntil(this.destroy$)
