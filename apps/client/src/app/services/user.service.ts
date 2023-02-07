@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { BehaviorSubject, filter, Observable, tap } from 'rxjs';
 
 import { API_URL, HTTP_OPTIONS } from '../constants';
-import { User, CreateUserDto } from '@git-gud/entities';
+import { User, CreateUserDto, UpdateUserDto } from '@git-gud/entities';
 import { HttpClient } from '@angular/common/http';
 
 @Injectable({
@@ -10,8 +10,6 @@ import { HttpClient } from '@angular/common/http';
 })
 export class UserService {
   public loggedInUser$ = new BehaviorSubject<User | null>(null);
-  public usersFriends$ = new BehaviorSubject<User[]>([]);
-
   public selectedUser$ = new BehaviorSubject<User | null>(null);
 
   constructor(private http: HttpClient) {
@@ -20,17 +18,15 @@ export class UserService {
       this.loggedInUser$.next(JSON.parse(user));
     }
 
-    this.loggedInUser$.subscribe((user) => {
-      if (user) {
-        window.localStorage.setItem('user', JSON.stringify(user));
-      }
+    this.loggedInUser$.pipe(filter((user) => !!user)).subscribe((user) => {
+      window.localStorage.setItem('user', JSON.stringify(user));
     });
   }
 
   getUser(id: string): Observable<User> {
     return this.http.get<User>(API_URL + '/users/' + id).pipe(
       tap((user) => {
-        this.loggedInUser$.next(user);
+        this.selectedUser$.next(user);
       })
     );
   }
@@ -40,7 +36,18 @@ export class UserService {
   }
 
   register(createUserDto: CreateUserDto): Observable<User> {
-    return this.http.post<User>(`${API_URL}/users/register`, createUserDto, HTTP_OPTIONS);
+    return this.http
+      .post<User>(API_URL + '/users/register', createUserDto, HTTP_OPTIONS)
+      .pipe(tap((user) => this.loggedInUser$.next(user)));
+  }
+
+  update(id: string, updateUserDto: UpdateUserDto) {
+    return this.http.patch<User>(API_URL + '/users/' + id, updateUserDto, HTTP_OPTIONS).pipe(
+      tap((user) => {
+        this.loggedInUser$.next(user);
+        this.selectedUser$.next(user);
+      })
+    );
   }
 
   delete(id: string) {

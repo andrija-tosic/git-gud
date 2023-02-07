@@ -1,8 +1,7 @@
 import { Component } from '@angular/core';
-import { FormArray, FormControl, FormGroup, ValidationErrors, Validators } from '@angular/forms';
+import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Difficulty, Tag } from '@git-gud/entities';
-import { BehaviorSubject, take } from 'rxjs';
+import { PROGRAMMING_LANGUAGES } from '../constants';
 import { ProblemService } from '../services/problem.service';
 
 @Component({
@@ -20,6 +19,7 @@ export class ProblemSubmitComponent {
       'Ctrl-Space': 'autocomplete',
     },
     mode: 'markdown',
+    lineWrapping: true,
   };
 
   text = '';
@@ -44,24 +44,7 @@ export class ProblemSubmitComponent {
     { name: 'Hard', value: 2 },
   ];
 
-  languages = [
-    {
-      id: 50,
-      name: 'C',
-    },
-    {
-      id: 51,
-      name: 'C#',
-    },
-    {
-      id: 62,
-      name: 'Java',
-    },
-    {
-      id: 63,
-      name: 'JavaScript',
-    },
-  ];
+  languages = [...PROGRAMMING_LANGUAGES];
 
   problemId: string | null = null;
 
@@ -73,19 +56,7 @@ export class ProblemSubmitComponent {
       programmingLanguagesIds: new FormControl([this.languages[0].id], { validators: Validators.required }),
       difficulty: new FormControl(0, { validators: Validators.required }),
       tags: new FormControl([this.tags[0].name], { validators: Validators.required }),
-      testCases: new FormArray(
-        [
-          new FormGroup({
-            // _id: new FormControl(0),
-            input: new FormControl('', { validators: Validators.required }),
-            desiredOutput: new FormControl('', { validators: Validators.required }),
-            explanation: new FormControl(''),
-            cpuTimeLimit: new FormControl(''),
-            memoryUsageLimit: new FormControl(0),
-          }),
-        ],
-        { validators: Validators.required }
-      ),
+      testCases: new FormArray([this.defaultTestCaseFormGroup], { validators: Validators.required }),
     });
 
     route.paramMap.subscribe((paramMap) => {
@@ -121,17 +92,19 @@ export class ProblemSubmitComponent {
     });
   }
 
+  get defaultTestCaseFormGroup() {
+    return new FormGroup({
+      // _id: new FormControl(0),
+      input: new FormControl('', { validators: Validators.required }),
+      desiredOutput: new FormControl('', { validators: Validators.required }),
+      explanation: new FormControl(''),
+      cpuTimeLimit: new FormControl(10.0),
+      memoryUsageLimit: new FormControl(16384),
+    });
+  }
+
   addTestCase() {
-    (this.form?.get('testCases') as FormArray).push(
-      new FormGroup({
-        // _id: new FormControl(0),
-        input: new FormControl('', { validators: Validators.required }),
-        desiredOutput: new FormControl('', { validators: Validators.required }),
-        explanation: new FormControl(''),
-        cpuTimeLimit: new FormControl(''),
-        memoryUsageLimit: new FormControl(0),
-      })
-    );
+    (this.form?.get('testCases') as FormArray).push(this.defaultTestCaseFormGroup);
   }
 
   removeTestCase(index: number) {

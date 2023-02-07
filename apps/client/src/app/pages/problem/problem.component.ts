@@ -5,6 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Problem, ProgrammingLanguage, Submission, User } from '@git-gud/entities';
 import { ConfirmationService, ConfirmEventType, MessageService } from 'primeng/api';
 import { BehaviorSubject, combineLatest, filter, map, Observable } from 'rxjs';
+import { PROGRAMMING_LANGUAGES } from '../../constants';
 import { ProblemService } from '../../services/problem.service';
 import { UserService } from '../../services/user.service';
 
@@ -37,64 +38,9 @@ export class ProblemComponent {
 
   // languages = this.problemService.languages;
 
-  languages: ProgrammingLanguage[] = [
-    {
-      id: 50,
-      name: 'C',
-      codeTemplate: `
-#include <stdio.h>
-int main(void) {
-  char text[10];
-  scanf("%s", text);
+  languages: ProgrammingLanguage[] = [...PROGRAMMING_LANGUAGES];
 
-  
-  printf("%s", text);
-  return 0;
-}`,
-    },
-    {
-      id: 51,
-      name: 'C#',
-      codeTemplate: `
-using System;
-public class Program
-{
-    public static void Main(string[] args)
-    {
-      string s = Console.ReadLine();
-      Console.WriteLine(s);
-    }
-}`,
-    },
-    {
-      id: 62,
-      name: 'Java',
-      codeTemplate: `
-import java.util.Scanner;
-
-class Main {
-
-  public static void main(String[] args) {
-    Scanner scanner = new Scanner(System.in);
-    String s = scanner.nextLine();
-    
-    System.out.println(s);
-  }
-}`,
-    },
-    {
-      id: 63,
-      name: 'JavaScript',
-      codeTemplate: `
-const fs = require('fs');
-const data = fs.readFileSync(0, 'utf-8');
-
-console.log(data);  
-`,
-    },
-  ];
-
-  selectedLanguage$ = new BehaviorSubject<ProgrammingLanguage>(this.languages[1]);
+  selectedLanguage$ = new BehaviorSubject<ProgrammingLanguage>(this.languages[0]);
 
   codemirrorOptions = {
     lineNumbers: true,
@@ -158,7 +104,7 @@ console.log(data);
     } else {
       this.code = this.languages.find((l) => l.id === selectedLanguage.id)!.codeTemplate;
     }
-    this.codemirrorOptions.mode = selectedLanguage.name.toLowerCase();
+    this.codemirrorOptions.mode = selectedLanguage.codemirrorMode;
   }
 
   submitCode(problem: Problem, user: User, selectedLanguage: ProgrammingLanguage) {

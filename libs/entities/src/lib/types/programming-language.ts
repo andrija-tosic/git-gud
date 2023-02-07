@@ -2,6 +2,7 @@ export interface ProgrammingLanguage {
   id: number;
   name: string;
   codeTemplate: string;
+  codemirrorMode: string;
 }
 
 // export enum ProgrammingLanguage {

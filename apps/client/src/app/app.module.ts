@@ -21,7 +21,6 @@ import { TableModule } from 'primeng/table';
 import { ProblemComponent } from './pages/problem/problem.component';
 import { ProblemDifficultyPipe } from './pipes/problem-difficulty.pipe';
 import { EditorModule } from 'primeng/editor';
-import { MonacoEditorModule } from 'ngx-monaco-editor-v2';
 import { DropdownModule } from 'primeng/dropdown';
 import { CodemirrorModule } from '@ctrl/ngx-codemirror';
 import { SubmissionStatusPipe } from './pipes/submission-status.pipe';
@@ -30,6 +29,7 @@ import { ProblemSubmitComponent } from './problem-submit/problem-submit.componen
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { MarkdownModule } from 'ngx-markdown';
 import { MessageErrorStatusPipe } from './pipes/message-error-status.pipe';
+import { ToastModule } from 'primeng/toast';
 
 @NgModule({
   declarations: [
@@ -58,13 +58,13 @@ import { MessageErrorStatusPipe } from './pipes/message-error-status.pipe';
     SelectButtonModule,
     TableModule,
     EditorModule,
-    MonacoEditorModule.forRoot(),
     DropdownModule,
     CodemirrorModule,
     ProgressSpinnerModule,
     ReactiveFormsModule,
     ConfirmDialogModule,
     MarkdownModule.forRoot(),
+    ToastModule,
   ],
   providers: [],
   bootstrap: [AppComponent],

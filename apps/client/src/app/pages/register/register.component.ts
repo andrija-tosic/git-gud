@@ -27,7 +27,7 @@ export class RegisterComponent {
 
       this.userService.register({ email: this.email, name: this.name }).subscribe({
         next: (person) => {
-          this.router.navigate(['/home']);
+          this.router.navigate(['/']);
         },
         error: alertErrors,
       });

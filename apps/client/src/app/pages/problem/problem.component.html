@@ -17,12 +17,13 @@
             [baseZIndex]="10000"
             rejectButtonStyleClass="p-button-text"
           ></p-confirmDialog>
-          <p-button
+          <button
+            pButton
             (click)="deleteProblem(problem)"
             icon="pi pi-times"
             label="Delete"
-            class="p-button-outlined"
-          ></p-button>
+            class="p-button-danger p-button-outlined"
+          ></button>
         </div>
 
         <markdown [data]="problem.text" [disableSanitizer]="true"> </markdown>
