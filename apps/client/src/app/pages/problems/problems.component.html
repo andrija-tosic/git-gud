@@ -1,1 +1,63 @@
-<p>problems works!</p>
+<h2>Search for problems</h2>
+<div style="max-width: 80%">
+  <h3>Tags</h3>
+  <p-selectButton
+    [options]="tags"
+    [(ngModel)]="selectedTags"
+    [multiple]="true"
+    optionLabel="name"
+    optionValue="value"
+  ></p-selectButton>
+  <div>
+    <h3>Difficulty</h3>
+    <div class="flex justify-content-between">
+      <p-selectButton
+        [options]="difficulties"
+        [(ngModel)]="selectedDifficulties"
+        [multiple]="true"
+        optionLabel="name"
+        optionValue="value"
+      ></p-selectButton>
+      <span class="p-input-icon-left">
+        <i class="pi pi-search"></i>
+        <input
+          #searchInput
+          (keyup)="this.searchValueChanges$.next($any($event).target.value)"
+          type="text"
+          pInputText
+          placeholder="Search"
+          [(ngModel)]="searchValue"
+        />
+      </span>
+    </div>
+  </div>
+</div>
+
+<ng-container *ngIf="this.problems$ | async as problems">
+  <p-table [value]="problems" [tableStyle]="{ 'min-width': '60rem' }">
+    <ng-template pTemplate="header">
+      <tr>
+        <th pSortableColumn="title" style="width: 20%">Title <p-sortIcon field="title"></p-sortIcon></th>
+        <th pSortableColumn="difficulty" style="width: 20%">Difficulty <p-sortIcon field="difficulty"></p-sortIcon></th>
+        <th pSortableColumn="helpfulCount" style="width: 20%">
+          Helpful <p-sortIcon field="helpfulCount"></p-sortIcon>
+        </th>
+        <th pSortableColumn="unhelpfulCount" style="width: 20%">
+          Unhelpful <p-sortIcon field="unhelpfulCount"></p-sortIcon>
+        </th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-problem>
+      <tr>
+        <td>
+          <button pButton class="p-button-outlined" [routerLink]="['/problems/' + problem._id]">
+            {{ problem.title }}
+          </button>
+        </td>
+        <td>{{ problem.difficulty | problemDifficulty }}</td>
+        <td>{{ problem.helpfulCount }}</td>
+        <td>{{ problem.unhelpfulCount }}</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</ng-container>

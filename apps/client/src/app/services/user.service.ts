@@ -9,10 +9,10 @@ import { HttpClient } from '@angular/common/http';
   providedIn: 'root',
 })
 export class UserService {
-  public loggedInUser$ = new BehaviorSubject<User>({} as User);
+  public loggedInUser$ = new BehaviorSubject<User | null>(null);
   public usersFriends$ = new BehaviorSubject<User[]>([]);
 
-  public selectedUser$ = new BehaviorSubject<User>({} as User);
+  public selectedUser$ = new BehaviorSubject<User | null>(null);
 
   constructor(private http: HttpClient) {
     const user = window.localStorage.getItem('user');

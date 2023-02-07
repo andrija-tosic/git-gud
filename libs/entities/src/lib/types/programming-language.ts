@@ -1,10 +1,16 @@
-export enum ProgrammingLanguage {
-  JavaScript = 'JavaScript',
-  Java = 'Java',
-  CPlusPlus = 'C++',
-  C = 'C',
-  CSharp = 'C#',
+export interface ProgrammingLanguage {
+  id: number;
+  name: string;
+  codeTemplate: string;
 }
+
+// export enum ProgrammingLanguage {
+//   JavaScript = 'JavaScript',
+//   Java = 'Java',
+//   CPlusPlus = 'C++',
+//   C = 'C',
+//   CSharp = 'C#',
+// }
 
 // [
 //   {

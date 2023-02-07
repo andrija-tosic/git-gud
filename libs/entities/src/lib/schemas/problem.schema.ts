@@ -10,6 +10,8 @@ export type ProblemDocument = HydratedDocument<Problem>;
 
 @Schema({ timestamps: true })
 export class Problem {
+  _id: string;
+
   @IsNotEmpty()
   @Prop({ required: true })
   title: string;
@@ -28,7 +30,7 @@ export class Problem {
 
   @IsNotEmpty()
   @Prop({ type: [String], enum: Tag, required: true })
-  tags: Tag[];
+  tags: (typeof Tag)[];
 
   @Prop({ type: Number, default: 0 })
   helpfulCount: number;

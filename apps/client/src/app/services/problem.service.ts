@@ -11,14 +11,27 @@ import {
 } from '@git-gud/entities';
 import { BehaviorSubject } from 'rxjs';
 import { API_URL, HTTP_OPTIONS } from '../constants';
+import { ProgrammingLanguage } from '@git-gud/entities';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ProblemService {
-  selectedProblem$ = new BehaviorSubject<Problem>({} as Problem);
+  public selectedProblem$ = new BehaviorSubject<Problem | null>(null);
 
-  constructor(private http: HttpClient) {}
+  // public languages: ProgrammingLanguage[] = [];
+
+  constructor(private http: HttpClient) {
+    // this.getLanguages().subscribe((languages) => (this.languages = languages));
+  }
+
+  getProblem(id: string) {
+    return this.http.get<Problem>(API_URL + '/problems/' + id);
+  }
+
+  // getLanguages() {
+  // return this.http.get<ProgrammingLanguage[]>('http://localhost:2358/languages');
+  // }
 
   createProblem(dto: CreateProblemDto) {
     return this.http.post<Problem>(API_URL + '/problems/', dto, HTTP_OPTIONS);
@@ -45,11 +58,11 @@ export class ProblemService {
   }
 
   searchProblems(problemFilters: ProblemSearchFilters) {
-    return this.http.post<Problem[]>(API_URL + '/problems/', problemFilters, HTTP_OPTIONS);
+    return this.http.post<Problem[]>(API_URL + '/problems/search/', problemFilters, HTTP_OPTIONS);
   }
 
   randomProblem(problemFilters: ProblemSearchFilters) {
-    return this.http.post<Problem[]>(API_URL + '/problems/random/', problemFilters, HTTP_OPTIONS);
+    return this.http.post<Problem[]>(API_URL + '/problems/search/random', problemFilters, HTTP_OPTIONS);
   }
 
   upvoteProblem(id: string) {

@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { User } from '@git-gud/entities';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, filter, Observable } from 'rxjs';
 import { UserService } from '../../services/user.service';
 
 @Component({
@@ -10,6 +10,6 @@ import { UserService } from '../../services/user.service';
 export class NavigationComponent {
   loggedInUser$: BehaviorSubject<User>;
   constructor(private userService: UserService) {
-    this.loggedInUser$ = this.userService.loggedInUser$;
+    this.loggedInUser$ = this.userService.loggedInUser$.pipe(filter((user) => !!user)) as BehaviorSubject<User>;
   }
 }

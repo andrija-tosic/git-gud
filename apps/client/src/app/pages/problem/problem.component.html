@@ -1,0 +1,95 @@
+<ng-container *ngIf="this.problem$ | async as problem">
+  <ng-container *ngIf="this.user$ | async as user">
+    <ng-container *ngIf="this.currentSubmission$ | async as currentSubmission">
+      <div class="flex justify-content-between">
+        <div class="flex flex-column" style="width: 50%">
+          <h1>{{ problem.title }}</h1>
+
+          <span [innerHTML]="problem.text"></span>
+          <!-- <p-editor [(ngModel)]="problem.text"></p-editor>
+        <p>Value: {{ problem.text || 'empty' }}</p> -->
+
+          <!-- <ngx-codemirror
+        [(ngModel)]="problem.text"
+        [options]="{
+          lineNumbers: false,
+          theme: 'nord',
+          mode: 'markdown'
+        }"
+      ></ngx-codemirror> -->
+
+          <div
+            class="surface-card p-4 shadow-2 border-round w-full lg:w-6"
+            *ngFor="let testCase of problem.testCases; let i = index"
+          >
+            <h4>Testcase {{ i + 1 }}</h4>
+            <div>
+              Input: <code>{{ testCase.input }}</code>
+            </div>
+            <div>
+              Expected output: <code>{{ testCase.desiredOutput }}</code>
+            </div>
+          </div>
+        </div>
+
+        <div style="height: 500px; width: 50%">
+          <div class="flex flex-row align-items-center">
+            <h4>Language</h4>
+            <p-dropdown
+              [disabled]="loading"
+              [options]="languages"
+              [(ngModel)]="selectedLanguage"
+              optionLabel="name"
+              (onChange)="changeCodeTemplate(problem, user)"
+            ></p-dropdown>
+          </div>
+
+          <ngx-codemirror [disabled]="loading" [(ngModel)]="code" [options]="this.codemirrorOptions"></ngx-codemirror>
+          <div class="flex justify-content-end">
+            <p-progressSpinner
+              *ngIf="loading"
+              class="custom-spinner"
+              [style]="{ width: '50px', height: '50px' }"
+              strokeWidth="8"
+            ></p-progressSpinner>
+
+            <button
+              [disabled]="loading"
+              pButton
+              class="p-button-outlined"
+              label="Submit"
+              (click)="submitCode(problem, user)"
+            ></button>
+          </div>
+
+          <div
+            class="surface-card p-4 shadow-2 border-round w-full lg:w-6"
+            *ngFor="let testResult of currentSubmission.testResults; let i = index"
+          >
+            <h4>Testcase {{ i + 1 }}</h4>
+            <p>
+              Status: <code>{{ testResult.status | submissionStatus }}</code>
+            </p>
+            <p *ngIf="testResult.output">
+              Output: <code>{{ testResult.output }}</code>
+            </p>
+            <p *ngIf="testResult.message">
+              Message: <code>{{ testResult.message }}</code>
+            </p>
+            <p *ngIf="testResult.compileOutput">
+              Compiler output: <code>{{ testResult.compileOutput }}</code>
+            </p>
+            <p>
+              Time taken: <code>{{ testResult.time }} seconds</code>
+            </p>
+            <p>
+              Memory used: <code>{{ testResult.memory }} bytes</code>
+            </p>
+            <p *ngIf="testResult.cpuTimeLimitExceeded">⚠️ CPU time limit exceeded</p>
+            <p *ngIf="testResult.memoryLimitExceeded">⚠️ Memory usage limit exceeded</p>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+  </ng-container>
+</ng-container>

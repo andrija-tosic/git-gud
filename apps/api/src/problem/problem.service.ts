@@ -100,6 +100,7 @@ export class ProblemService {
               testCases,
             })),
             catchError((e) => {
+              this.logger.error(e);
               this.logger.error(e.response.data, e.response.status);
               throw new HttpException(e.response.data, e.response.status);
             })
@@ -137,23 +138,25 @@ export class ProblemService {
       map(({ axiosResponse, testCases }) => ({ response: axiosResponse.data, testCases })),
       switchMap(({ response, testCases }) => {
         console.log('response.submissions', response.submissions);
-        submissionDto.testResults = response.submissions.map((submissionResponse, index) => {
-          return {
-            testCase: new Types.ObjectId(testCases[index]._id),
-            passed: submissionResponse.status.id === Judge0SubmissionStatus.Accepted,
-            time: submissionResponse.time,
-            memory: submissionResponse.memory,
-            message: submissionResponse.message,
-            output: submissionResponse.stdout
-              ? Buffer.from(submissionResponse.stdout, 'base64').toString('ascii')
-              : null,
-            compileOutput: submissionResponse.compile_output
-              ? decodeURIComponent(Buffer.from(submissionResponse.compile_output, 'base64').toString('ascii'))
-              : null,
-            cpuTimeLimitExceeded: Number(submissionResponse.time) > testCases[index].cpuTimeLimit,
-            memoryLimitExceeded: submissionResponse.memory > testCases[index].memoryUsageLimit,
-          } as TestResult;
-        });
+
+        submissionDto.testResults = response.submissions.map(
+          (submissionResponse, index) =>
+            ({
+              testCase: new Types.ObjectId(testCases[index]._id),
+              status: submissionResponse.status.id,
+              time: submissionResponse.time,
+              memory: submissionResponse.memory,
+              message: submissionResponse.message,
+              output: submissionResponse.stdout
+                ? Buffer.from(submissionResponse.stdout, 'base64').toString('ascii')
+                : null,
+              compileOutput: submissionResponse.compile_output
+                ? decodeURIComponent(Buffer.from(submissionResponse.compile_output, 'base64').toString('ascii'))
+                : null,
+              cpuTimeLimitExceeded: Number(submissionResponse.time) > testCases[index].cpuTimeLimit,
+              memoryLimitExceeded: submissionResponse.memory > testCases[index].memoryUsageLimit,
+            } as TestResult)
+        );
 
         const problemDoc =
           createOrUpdate === 'Create'
@@ -227,6 +230,8 @@ export class ProblemService {
     if (searchFilters.tags?.length > 0) {
       filterQuery.tags = { $in: searchFilters.tags };
     }
+
+    console.log(filterQuery);
 
     return this.problemModel.find(filterQuery).exec();
   }

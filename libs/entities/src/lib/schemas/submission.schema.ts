@@ -6,11 +6,13 @@ import { User } from './user.schema';
 
 export type SubmissionDocument = HydratedDocument<Submission>;
 
-@Schema({ timestamps: true })
+@Schema()
 export class Submission {
+  _id: string;
+
   @IsNotEmpty()
   @Prop({ type: Types.ObjectId, ref: User.name })
-  author: User;
+  author: string;
 
   @IsNotEmpty()
   @Prop()

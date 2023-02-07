@@ -2,12 +2,14 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UserModule } from './user/user.module';
 import { ProblemModule } from './problem/problem.module';
+import { MONGODB_CONN_STRING, MONGODB_NAME } from './constants';
 
 @Module({
   imports: [
     MongooseModule.forRoot(
-      'mongodb+srv://andrija:iYSzBianDeThIRek@git-gud-cluster.mdhmwey.mongodb.net/?retryWrites=true&w=majority',
-      { dbName: 'git-gud-db' }
+      MONGODB_CONN_STRING,
+
+      { dbName: MONGODB_NAME }
     ),
     UserModule,
     ProblemModule,

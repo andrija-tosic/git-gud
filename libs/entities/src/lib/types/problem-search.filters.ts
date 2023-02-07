@@ -4,5 +4,5 @@ import { Tag } from './tag.enum';
 export interface ProblemSearchFilters {
   title: string;
   difficulties: Difficulty[];
-  tags: Tag[];
+  tags: (typeof Tag)[];
 }

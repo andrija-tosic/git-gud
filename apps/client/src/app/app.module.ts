@@ -17,6 +17,16 @@ import { ButtonModule } from 'primeng/button';
 import { MenubarModule } from 'primeng/menubar';
 import { ProblemsComponent } from './pages/problems/problems.component';
 import { UserComponent } from './pages/user/user.component';
+import { SelectButtonModule } from 'primeng/selectbutton';
+import { TableModule } from 'primeng/table';
+import { ProblemComponent } from './pages/problem/problem.component';
+import { ProblemDifficultyPipe } from './pipes/problem-difficulty.pipe';
+import { EditorModule } from 'primeng/editor';
+import { MonacoEditorModule } from 'ngx-monaco-editor-v2';
+import { DropdownModule } from 'primeng/dropdown';
+import { CodemirrorModule } from '@ctrl/ngx-codemirror';
+import { SubmissionStatusPipe } from './pipes/submission-status.pipe';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 
 @NgModule({
   declarations: [
@@ -27,6 +37,9 @@ import { UserComponent } from './pages/user/user.component';
     NavigationComponent,
     ProblemsComponent,
     UserComponent,
+    ProblemComponent,
+    ProblemDifficultyPipe,
+    SubmissionStatusPipe,
   ],
   imports: [
     BrowserModule,
@@ -38,6 +51,13 @@ import { UserComponent } from './pages/user/user.component';
     InputTextModule,
     ButtonModule,
     MenubarModule,
+    SelectButtonModule,
+    TableModule,
+    EditorModule,
+    MonacoEditorModule.forRoot(),
+    DropdownModule,
+    CodemirrorModule,
+    ProgressSpinnerModule,
   ],
   providers: [],
   bootstrap: [AppComponent],
