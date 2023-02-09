@@ -25,9 +25,7 @@ async function bootstrap() {
   const port = process.env.PORT || 3333;
   await app.listen(port);
 
-  mongoose.set('debug', function (collectionName, method, query, doc) {
-    Logger.log(`${collectionName}.${method} (${JSON.stringify(query, null, 2)})`, 'Mongoose');
-  });
+  mongoose.set('debug', true);
 
   Logger.log(`🚀 Application is running on: http://localhost:${port}/${globalPrefix}`);
 }

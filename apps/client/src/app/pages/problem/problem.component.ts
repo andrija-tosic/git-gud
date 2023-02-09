@@ -1,32 +1,27 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable no-useless-escape */
-import { Component } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Problem, ProgrammingLanguage, Submission, User } from '@git-gud/entities';
 import { ConfirmationService, ConfirmEventType, MessageService } from 'primeng/api';
-import { BehaviorSubject, combineLatest, filter, map, Observable } from 'rxjs';
+import { BehaviorSubject, combineLatest, filter, map, Observable, Subject, takeUntil, tap } from 'rxjs';
 import { PROGRAMMING_LANGUAGES } from '../../constants';
-import { ProblemService } from '../../services/problem.service';
+
+import { ProblemService, Solution } from '../../services/problem.service'; // TODO........
 import { UserService } from '../../services/user.service';
 
 @Component({
   selector: 'git-gud-problem',
   templateUrl: './problem.component.html',
-  styles: [
-    `
-      :host ::ng-deep .custom-spinner .p-progress-spinner-circle {
-        stroke: rgb(127, 191, 246) !important;
-      }
-
-      :host ::ng-deep .custom-spinner .p-progress-spinner-svg {
-        animation: p-progress-spinner-rotate 2s cubic-bezier(0.23, 0.88, 0.89, 0.49) infinite;
-      }
-    `,
-  ],
   providers: [ConfirmationService, MessageService],
 })
-export class ProblemComponent {
+export class ProblemComponent implements OnDestroy {
+  destroy$ = new Subject();
+
   problem$ = this.problemService.selectedProblem$;
+
+  solutions$ = new BehaviorSubject<Solution[]>([]);
+  selectedSolution$ = new BehaviorSubject<Solution | null>(null);
 
   currentSubmission$: Observable<Submission | undefined>;
 
@@ -35,8 +30,6 @@ export class ProblemComponent {
   code = '';
 
   loading = false;
-
-  // languages = this.problemService.languages;
 
   languages: ProgrammingLanguage[] = [...PROGRAMMING_LANGUAGES];
 
@@ -48,6 +41,13 @@ export class ProblemComponent {
     extraKeys: {
       'Ctrl-Space': 'autocomplete',
     },
+    mode: this.languages[0].name.toLowerCase(),
+  };
+
+  codemirrorOptionsSolution = {
+    lineNumbers: true,
+    theme: 'nord',
+    readOnly: true,
     mode: this.languages[0].name.toLowerCase(),
   };
 
@@ -65,7 +65,7 @@ export class ProblemComponent {
     private route: ActivatedRoute,
     public router: Router,
     private confirmationService: ConfirmationService,
-    private messageService: MessageService
+    public messageService: MessageService
   ) {
     this.route.paramMap.subscribe((paramMap) => {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -73,22 +73,38 @@ export class ProblemComponent {
       this.problemService.getProblem(id).subscribe((problem) => {
         this.problem$.next(problem);
       });
+
+      this.problemService.problemSolutions(id).subscribe((solutions) => {
+        this.solutions$.next(solutions);
+        this.selectedSolution$.next(solutions[0]);
+      });
+
+      this.selectedSolution$
+        .pipe(
+          takeUntil(this.destroy$),
+          filter((solution) => !!solution),
+          tap((solution) => {
+            this.codemirrorOptionsSolution = {
+              ...this.codemirrorOptionsSolution,
+              mode: PROGRAMMING_LANGUAGES.find((l) => l.id === solution!.programmingLanguage)!.codemirrorMode,
+            };
+          })
+        )
+        .subscribe();
     });
 
     combineLatest([this.problem$, this.user$, this.selectedLanguage$])
       .pipe(filter((problemAndUser) => problemAndUser[0] !== null && problemAndUser[1] !== null))
       .subscribe(([problem, user, selectedLanguage]) => {
-        this.languages = this.languages.filter((l) => problem!.programmingLanguagesIds.includes(l.id));
+        this.languages = PROGRAMMING_LANGUAGES.filter((l) => problem!.programmingLanguagesIds.includes(l.id));
 
         this.changeCodeTemplate(problem!, user!, selectedLanguage);
 
         this.currentSubmission$ = this.problem$.pipe(
           map((problem) => {
-            const submission = problem?.submissions.find((s) => {
+            return problem?.submissions.find((s) => {
               return s.author === user!._id && s.programmingLanguage === selectedLanguage.id;
             });
-
-            return submission;
           })
         );
       });
@@ -104,7 +120,11 @@ export class ProblemComponent {
     } else {
       this.code = this.languages.find((l) => l.id === selectedLanguage.id)!.codeTemplate;
     }
-    this.codemirrorOptions.mode = selectedLanguage.codemirrorMode;
+
+    this.codemirrorOptions = {
+      ...this.codemirrorOptions,
+      mode: selectedLanguage.codemirrorMode,
+    };
   }
 
   submitCode(problem: Problem, user: User, selectedLanguage: ProgrammingLanguage) {
@@ -150,16 +170,25 @@ export class ProblemComponent {
         this.messageService.add({ severity: 'info', summary: 'Confirmed', detail: 'Problem deleted' });
         this.problemService.deleteProblem(problem._id).subscribe((_p) => this.router.navigate(['/']));
       },
-      reject: (type: ConfirmEventType) => {
-        switch (type) {
-          case ConfirmEventType.REJECT:
-            this.messageService.add({ severity: 'error', summary: 'Rejected', detail: 'You have rejected' });
-            break;
-          case ConfirmEventType.CANCEL:
-            this.messageService.add({ severity: 'warn', summary: 'Cancelled', detail: 'You have cancelled' });
-            break;
-        }
+    });
+  }
+
+  deleteSubmission(problem: Problem, submission: Submission) {
+    this.confirmationService.confirm({
+      message: `Are you sure you want to delete your submission?`,
+      header: 'Delete Confirmation',
+      icon: 'pi pi-info-circle',
+      accept: () => {
+        this.problemService.deleteSubmission(problem._id, submission._id).subscribe((problem) => {
+          this.problem$.next(problem);
+          this.messageService.add({ severity: 'info', summary: 'Confirmed', detail: 'Subission deleted' });
+        });
       },
     });
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next(undefined);
+    this.destroy$.complete();
   }
 }

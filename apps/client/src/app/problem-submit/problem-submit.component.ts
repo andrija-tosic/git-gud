@@ -1,10 +1,12 @@
 import { Component } from '@angular/core';
 import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { MessageService } from 'primeng/api';
 import { PROGRAMMING_LANGUAGES } from '../constants';
 import { ProblemService } from '../services/problem.service';
 
 @Component({
+  providers: [MessageService],
   selector: 'git-gud-problem-submit',
   templateUrl: './problem-submit.component.html',
 })
@@ -21,8 +23,6 @@ export class ProblemSubmitComponent {
     mode: 'markdown',
     lineWrapping: true,
   };
-
-  text = '';
 
   tags = [
     { name: 'Array', value: 'Array' },
@@ -48,7 +48,12 @@ export class ProblemSubmitComponent {
 
   problemId: string | null = null;
 
-  constructor(private problemService: ProblemService, private route: ActivatedRoute, private router: Router) {
+  constructor(
+    private problemService: ProblemService,
+    private route: ActivatedRoute,
+    private router: Router,
+    public messageService: MessageService
+  ) {
     this.form = new FormGroup({
       // _id: new FormControl(0),
       title: new FormControl('', { validators: Validators.required }),
@@ -113,13 +118,19 @@ export class ProblemSubmitComponent {
 
   onConfirm() {
     this.form.markAllAsTouched();
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();
 
-      // return;
+    if (!this.form.valid) {
+      for (const control in this.form.controls) {
+        if (this.form.controls[control].invalid) {
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: control[0].toUpperCase() + control.slice(1) + ' cannot be empty.',
+          });
+        }
+      }
+      return;
     }
-
-    console.log(this.form.getRawValue());
 
     const apiCall = this.problemId
       ? this.problemService.updateProblem(this.problemId, this.form.getRawValue())

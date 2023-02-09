@@ -1,18 +1,7 @@
 import { Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
-import { Problem, ProblemSearchFilters, Tag } from '@git-gud/entities';
-import {
-  BehaviorSubject,
-  combineLatest,
-  debounceTime,
-  distinctUntilChanged,
-  filter,
-  map,
-  mergeMap,
-  Observable,
-  Subject,
-  switchMap,
-  takeUntil,
-} from 'rxjs';
+import { Router } from '@angular/router';
+import { Difficulty, Problem, ProblemSearchFilters, Tag } from '@git-gud/entities';
+import { BehaviorSubject, combineLatest, debounceTime, distinctUntilChanged, map, Subject, takeUntil } from 'rxjs';
 import { ProblemService } from '../../services/problem.service';
 
 @Component({
@@ -55,8 +44,8 @@ export class ProblemsComponent implements OnDestroy {
 
   destroy$ = new Subject();
 
-  constructor(private problemService: ProblemService) {
-    this.problemService.searchProblems({} as ProblemSearchFilters).subscribe((problems) => {
+  constructor(private problemService: ProblemService, private router: Router) {
+    this.problemService.searchProblems({}).subscribe((problems) => {
       this.problems$.next(problems);
     });
 
@@ -65,22 +54,27 @@ export class ProblemsComponent implements OnDestroy {
         debounceTime(300),
         distinctUntilChanged(),
         map(([text, difficulties, tags]) => {
-          console.log([text, difficulties, tags]);
 
           return <ProblemSearchFilters>{
             title: text.trim(),
-            difficulties: difficulties,
-            tags: tags,
+            difficulties,
+            tags
           };
         }),
         takeUntil(this.destroy$)
       )
       .subscribe((filters) => {
         this.problemService.searchProblems(filters).subscribe((problems) => {
-          console.log(problems);
           this.problems$.next(problems);
         });
       });
+  }
+
+  randomProblem(title: string, tags: (typeof Tag)[], difficulties: Difficulty[]) {
+
+    this.problemService
+      .randomProblem({ difficulties, tags, title })
+      .subscribe((problem) => this.router.navigate(['/problems/' + problem._id]));
   }
 
   ngOnDestroy() {

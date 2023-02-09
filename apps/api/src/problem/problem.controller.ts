@@ -8,7 +8,6 @@ import {
   ProblemSearchFilters,
 } from '@git-gud/entities';
 import { Response } from 'express';
-import { tap } from 'rxjs';
 
 @Controller('problems')
 export class ProblemController {
@@ -60,8 +59,6 @@ export class ProblemController {
   ) {
     const problem = await this.problemService.makeSubmission(id, submissionId, updateSubmissionDto, 'Update');
 
-    console.log(problem);
-
     if (!problem) {
       res.status(HttpStatus.NOT_FOUND).send();
     } else {
@@ -88,5 +85,10 @@ export class ProblemController {
   @Post('/search/random')
   randomProblem(@Body() searchFilters: ProblemSearchFilters) {
     return this.problemService.randomProblem(searchFilters);
+  }
+
+  @Get(':id/solutions')
+  problemSolutions(@Param('id') id: string) {
+    return this.problemService.problemSolutions(id);
   }
 }

@@ -5,12 +5,22 @@ import {
   CreateSubmissionDto,
   Problem,
   ProblemSearchFilters,
+  //TODO..........
+  // Solution,
   Submission,
+  TestCase,
+  TestResult,
   UpdateProblemDto,
   UpdateSubmissionDto,
+  User,
 } from '@git-gud/entities';
 import { BehaviorSubject, tap } from 'rxjs';
 import { API_URL, HTTP_OPTIONS } from '../constants';
+
+export type Solution = Omit<Submission, 'author' | 'testResults'> & {
+  author: User;
+  testResults: (Omit<TestResult, 'testCase'> & { testCase: TestCase })[];
+};
 
 @Injectable({
   providedIn: 'root',
@@ -56,7 +66,7 @@ export class ProblemService {
       .pipe(tap((problem) => this.selectedProblem$.next(problem)));
   }
 
-  removeSubmission(id: string, submissionId: string) {
+  deleteSubmission(id: string, submissionId: string) {
     return this.http
       .delete<Problem>(API_URL + '/problems/' + id + '/submissions/' + submissionId)
       .pipe(tap((problem) => this.selectedProblem$.next(problem)));
@@ -67,7 +77,7 @@ export class ProblemService {
   }
 
   randomProblem(problemFilters: ProblemSearchFilters) {
-    return this.http.post<Problem[]>(API_URL + '/problems/search/random', problemFilters, HTTP_OPTIONS);
+    return this.http.post<Problem>(API_URL + '/problems/search/random', problemFilters, HTTP_OPTIONS);
   }
 
   upvoteProblem(id: string) {
@@ -87,6 +97,6 @@ export class ProblemService {
   }
 
   problemSolutions(id: string) {
-    return this.http.get<{ _id: string; submissions: Submission[] }>(API_URL + '/problems/' + id + '/solutions');
+    return this.http.get<Solution[]>(API_URL + '/problems/' + id + '/solutions');
   }
 }

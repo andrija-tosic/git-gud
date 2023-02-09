@@ -11,26 +11,41 @@
   ></p-selectButton>
   <div>
     <h3>Difficulty</h3>
-    <div class="flex justify-content-between">
-      <p-selectButton
-        [options]="difficulties"
-        [ngModel]="selectedDifficulties$ | async"
-        (ngModelChange)="selectedDifficulties$.next($event)"
-        [multiple]="true"
-        optionLabel="name"
-        optionValue="value"
-      ></p-selectButton>
-      <span class="p-input-icon-left">
-        <i class="pi pi-search"></i>
-        <input
-          #searchInput
-          (keyup)="this.searchValueChanges$.next($any($event).target.value)"
-          type="text"
-          pInputText
-          placeholder="Search"
-        />
-      </span>
-    </div>
+    <p-selectButton
+      [options]="difficulties"
+      [ngModel]="selectedDifficulties$ | async"
+      (ngModelChange)="selectedDifficulties$.next($event)"
+      [multiple]="true"
+      optionLabel="name"
+      optionValue="value"
+    ></p-selectButton>
+
+    <h3>Search</h3>
+    <span class="p-input-icon-left">
+      <i class="pi pi-search"></i>
+      <input
+        #searchInput
+        (keyup)="this.searchValueChanges$.next($any($event).target.value)"
+        type="text"
+        pInputText
+        placeholder="Title"
+      />
+    </span>
+
+    <ng-container
+      *ngIf="{
+        difficulties: this.selectedDifficulties$ | async,
+        tags: this.selectedTags$ | async,
+        title: this.searchValueChanges$ | async
+      } as vm"
+    >
+      <button
+        pButton
+        class="p-button-outlined"
+        label="Random"
+        (click)="randomProblem(vm.title!, vm.tags!, vm.difficulties!)"
+      ></button>
+    </ng-container>
   </div>
 </div>
 
@@ -38,8 +53,18 @@
   <p-table [value]="problems" [tableStyle]="{ 'min-width': '60rem' }">
     <ng-template pTemplate="header">
       <tr>
-        <th pSortableColumn="title" style="width: 20%">Title <p-sortIcon field="title"></p-sortIcon></th>
-        <th pSortableColumn="difficulty" style="width: 20%">Difficulty <p-sortIcon field="difficulty"></p-sortIcon></th>
+        <th pSortableColumn="title" style="width: 20%">
+          Title
+          <p-sortIcon field="title"></p-sortIcon>
+        </th>
+        <th pSortableColumn="difficulty" style="width: 20%">
+          Difficulty
+          <p-sortIcon field="difficulty"></p-sortIcon>
+        </th>
+        <th pSortableColumn="tags" style="width: 20%">
+          Tags
+          <p-sortIcon field="tags"></p-sortIcon>
+        </th>
       </tr>
     </ng-template>
     <ng-template pTemplate="body" let-problem>
@@ -50,6 +75,9 @@
           </button>
         </td>
         <td>{{ problem.difficulty | problemDifficulty }}</td>
+        <td>
+          <p-chip *ngFor="let tag of problem.tags" [label]="tag" styleClass="mr-2"></p-chip>
+        </td>
       </tr>
     </ng-template>
   </p-table>

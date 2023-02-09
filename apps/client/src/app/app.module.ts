@@ -20,7 +20,6 @@ import { SelectButtonModule } from 'primeng/selectbutton';
 import { TableModule } from 'primeng/table';
 import { ProblemComponent } from './pages/problem/problem.component';
 import { ProblemDifficultyPipe } from './pipes/problem-difficulty.pipe';
-import { EditorModule } from 'primeng/editor';
 import { DropdownModule } from 'primeng/dropdown';
 import { CodemirrorModule } from '@ctrl/ngx-codemirror';
 import { SubmissionStatusPipe } from './pipes/submission-status.pipe';
@@ -30,6 +29,11 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { MarkdownModule } from 'ngx-markdown';
 import { MessageErrorStatusPipe } from './pipes/message-error-status.pipe';
 import { ToastModule } from 'primeng/toast';
+import { TabViewModule } from 'primeng/tabview';
+import { ProgrammingLanguagePipe } from './pipes/programming-language.pipe';
+import { ArrayAveragePipe } from './pipes/array-average.pipe';
+import { ChipModule } from 'primeng/chip';
+
 
 @NgModule({
   declarations: [
@@ -44,6 +48,8 @@ import { ToastModule } from 'primeng/toast';
     SubmissionStatusPipe,
     ProblemSubmitComponent,
     MessageErrorStatusPipe,
+    ProgrammingLanguagePipe,
+    ArrayAveragePipe,
   ],
   imports: [
     BrowserModule,
@@ -57,7 +63,6 @@ import { ToastModule } from 'primeng/toast';
     MenubarModule,
     SelectButtonModule,
     TableModule,
-    EditorModule,
     DropdownModule,
     CodemirrorModule,
     ProgressSpinnerModule,
@@ -65,6 +70,7 @@ import { ToastModule } from 'primeng/toast';
     ConfirmDialogModule,
     MarkdownModule.forRoot(),
     ToastModule,
+    TabViewModule,ChipModule
   ],
   providers: [],
   bootstrap: [AppComponent],

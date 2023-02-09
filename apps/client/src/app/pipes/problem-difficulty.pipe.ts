@@ -5,7 +5,7 @@ import { Difficulty } from '@git-gud/entities';
   name: 'problemDifficulty',
 })
 export class ProblemDifficultyPipe implements PipeTransform {
-  transform(value: Difficulty, ...args: unknown[]): string {
+  transform(value: Difficulty): string {
     //TODO:
     switch (value) {
       case 0:

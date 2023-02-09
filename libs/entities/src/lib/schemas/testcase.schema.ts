@@ -1,12 +1,12 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { IsNotEmpty } from 'class-validator';
-import { HydratedDocument } from 'mongoose';
+import { HydratedDocument, Types } from 'mongoose';
 
 export type TestCaseDocument = HydratedDocument<TestCase>;
 
 @Schema()
 export class TestCase {
-  _id: string;
+  _id: Types.ObjectId;
 
   @IsNotEmpty()
   @Prop({ required: true })

@@ -11,10 +11,10 @@ import {
 } from '@git-gud/entities';
 import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { FilterQuery, Model, Types } from 'mongoose';
+import { FilterQuery, Model, PipelineStage, Types } from 'mongoose';
 import { CreateSubmissionDto, UpdateSubmissionDto, CreateProblemDto, UpdateProblemDto } from '@git-gud/entities';
 import { HttpService } from '@nestjs/axios';
-import { filter, map, repeat, from, switchMap, take, defer, catchError, lastValueFrom, firstValueFrom } from 'rxjs';
+import { filter, repeat, take, catchError, lastValueFrom } from 'rxjs';
 import { JUDGE0_API } from '../constants';
 
 @Injectable()
@@ -68,10 +68,10 @@ export class ProblemService {
     const judge0Submissions = testCases.map(
       (testCase) =>
         ({
-          source_code: Buffer.from(submissionDto.code, 'ascii').toString('base64'),
+          source_code: Buffer.from(submissionDto.code, 'utf8').toString('base64'),
           language_id: submissionDto.programmingLanguage,
-          stdin: Buffer.from(testCase.input, 'ascii').toString('base64'),
-          expected_output: Buffer.from(testCase.desiredOutput, 'ascii').toString('base64'),
+          stdin: Buffer.from(testCase.input, 'utf8').toString('base64'),
+          expected_output: Buffer.from(testCase.desiredOutput, 'utf8').toString('base64'),
           cpu_time_limit: testCase.cpuTimeLimit,
           memory_limit: testCase.memoryUsageLimit,
         } as Judge0SubmissionRequest)
@@ -134,12 +134,12 @@ export class ProblemService {
           time: submissionResponse.time,
           memory: submissionResponse.memory,
           message: submissionResponse.message
-            ? Buffer.from(submissionResponse.message, 'base64').toString('ascii')
+            ? Buffer.from(submissionResponse.message, 'base64').toString('utf8')
             : null,
-          output: submissionResponse.stdout ? Buffer.from(submissionResponse.stdout, 'base64').toString('ascii') : null,
-          stderr: submissionResponse.stderr ? Buffer.from(submissionResponse.stderr, 'base64').toString('ascii') : null,
+          output: submissionResponse.stdout ? Buffer.from(submissionResponse.stdout, 'base64').toString('utf8') : null,
+          stderr: submissionResponse.stderr ? Buffer.from(submissionResponse.stderr, 'base64').toString('utf8') : null,
           compileOutput: submissionResponse.compile_output
-            ? decodeURIComponent(Buffer.from(submissionResponse.compile_output, 'base64').toString('ascii'))
+            ? decodeURIComponent(Buffer.from(submissionResponse.compile_output, 'base64').toString('utf8'))
             : null,
           cpuTimeLimitExceeded: testCases[index].cpuTimeLimit
             ? Number(submissionResponse.time) > testCases[index].cpuTimeLimit
@@ -194,7 +194,11 @@ export class ProblemService {
 
   deleteSubmission(id: string, submissionId: string) {
     return this.problemModel
-      .findOneAndUpdate({ _id: id, 'submissions._id': submissionId }, { $pull: { submissions: { _id: submissionId } } })
+      .findOneAndUpdate(
+        { _id: id, 'submissions._id': submissionId },
+        { $pull: { submissions: { _id: submissionId } } },
+        { returnDocument: 'after' }
+      )
       .exec();
   }
 
@@ -209,10 +213,6 @@ export class ProblemService {
 
     const filterQuery: FilterQuery<unknown> = {};
 
-    if (searchFilters.title?.trim().length > 0) {
-      filterQuery.$text = { $search: searchFilters.title, $caseSensitive: false };
-    }
-
     if (searchFilters.difficulties?.length > 0) {
       filterQuery.difficulty = { $in: searchFilters.difficulties };
     }
@@ -221,89 +221,88 @@ export class ProblemService {
       filterQuery.tags = { $in: searchFilters.tags };
     }
 
-    console.log(filterQuery);
-
-    return this.problemModel.find(filterQuery).exec();
-  }
-
-  randomProblem(searchFilters: ProblemSearchFilters) {
-    const filterQuery: FilterQuery<unknown> = {};
+    const aggregateArg: PipelineStage[] = [];
 
     if (searchFilters.title?.trim().length > 0) {
-      filterQuery.$text = { $search: searchFilters.title, $caseSensitive: false };
-    }
+      aggregateArg.push({
+        $search: {
+          index: 'search_idx',
 
-    if (searchFilters.difficulties?.length > 0) {
-      filterQuery.difficulty = { $in: searchFilters.difficulties };
-    }
-
-    if (searchFilters.tags?.length > 0) {
-      filterQuery.tags = { $in: searchFilters.tags };
-    }
-
-    return this.problemModel
-      .aggregate([
-        {
-          $match: filterQuery,
-        },
-        {
-          $sample: {
-            size: 1,
+          wildcard: {
+            query: '*' + searchFilters.title + '*',
+            path: { wildcard: '*' },
+            allowAnalyzedField: true,
           },
         },
-      ])
-      .exec();
+      });
+    }
+
+    aggregateArg.push({ $match: filterQuery });
+
+    return this.problemModel.aggregate(aggregateArg).limit(50).exec();
   }
 
-  upvoteProblem(id: string) {
-    return this.problemModel
-      .findByIdAndUpdate(
-        id,
-        {
-          $inc: { helpfulCount: 1 },
+  async randomProblem(searchFilters: ProblemSearchFilters) {
+    if (
+      searchFilters.title?.length === 0 &&
+      searchFilters.difficulties?.length === 0 &&
+      searchFilters.tags?.length === 0
+    ) {
+      return (await this.problemModel.aggregate().sample(1).exec())[0] as Promise<Problem>;
+    }
+
+    const filterQuery: FilterQuery<unknown> = {};
+
+    if (searchFilters.difficulties?.length > 0) {
+      filterQuery.difficulty = { $in: searchFilters.difficulties };
+    }
+
+    if (searchFilters.tags?.length > 0) {
+      filterQuery.tags = { $in: searchFilters.tags };
+    }
+
+    const aggregateArg: PipelineStage[] = [];
+
+    if (searchFilters.title.trim().length > 0) {
+      aggregateArg.push({
+        $search: {
+          index: 'search_idx',
+
+          wildcard: {
+            query: '*' + searchFilters.title + '*',
+            path: { wildcard: '*' },
+            allowAnalyzedField: true,
+          },
         },
-        { returnDocument: 'after' }
-      )
-      .exec();
+      });
+    }
+
+    aggregateArg.push({ $match: filterQuery });
+
+    return (await this.problemModel.aggregate(aggregateArg).sample(1).exec())[0] as Promise<Problem>;
   }
 
-  removeProblemUpvote(id: string) {
-    return this.problemModel
-      .findByIdAndUpdate(
-        id,
-        {
-          $inc: { helpfulCount: 1 },
-        },
-        { returnDocument: 'after' }
-      )
+  async problemSolutions(id: string) {
+    const { submissions, testCases } = await this.problemModel
+      .findById(id, { submissions: true, testCases: true })
+      .populate('submissions.author')
+      .lean()
       .exec();
-  }
 
-  downvoteProblem(id: string) {
-    return this.problemModel
-      .findByIdAndUpdate(
-        id,
-        {
-          $dec: { unhelpfulCount: 1 },
-        },
-        { returnDocument: 'after' }
+    const retval = submissions
+      .filter((submission) =>
+        submission.testResults.every((testResult) => testResult.status === Judge0SubmissionStatus.Accepted)
       )
-      .exec();
-  }
+      .map((submission) => {
+        return {
+          ...submission,
+          testResults: submission.testResults.map((testResult) => ({
+            ...testResult,
+            testCase: testCases.find((testCase) => testCase._id.toString() === testResult.testCase.toString()),
+          })),
+        };
+      });
 
-  removeProblemDownvote(id: string) {
-    return this.problemModel
-      .findByIdAndUpdate(
-        id,
-        {
-          $dec: { unhelpfulCount: 1 },
-        },
-        { returnDocument: 'after' }
-      )
-      .exec();
-  }
-
-  problemSolutions(id: string) {
-    return this.problemModel.findOne({ _id: id, 'submissions.testResults.passed': true }, { submissions: true }).exec();
+    return retval;
   }
 }

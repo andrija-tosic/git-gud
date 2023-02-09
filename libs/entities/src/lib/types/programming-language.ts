@@ -1,9 +1,9 @@
-export interface ProgrammingLanguage {
+export type ProgrammingLanguage = {
   id: number;
   name: string;
   codeTemplate: string;
   codemirrorMode: string;
-}
+};
 
 // export enum ProgrammingLanguage {
 //   JavaScript = 'JavaScript',

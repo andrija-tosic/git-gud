@@ -16,15 +16,8 @@
         "tsConfig": "apps/client/tsconfig.app.json",
         "inlineStyleLanguage": "scss",
         "assets": ["apps/client/src/favicon.ico", "apps/client/src/assets"],
-        "styles": [
-          "apps/client/src/styles.scss",
-          "node_modules/quill/dist/quill.core.css",
-          "node_modules/quill/dist/quill.snow.css",
-          "node_modules/codemirror/addon/hint/show-hint.css"
-        ],
-        "scripts": ["node_modules/quill/dist/quill.js",
-          "node_modules/marked/marked.min.js"
-        ]
+        "styles": ["apps/client/src/styles.scss", "node_modules/codemirror/addon/hint/show-hint.css"],
+        "scripts": ["node_modules/marked/marked.min.js"]
       },
       "configurations": {
         "production": {

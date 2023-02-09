@@ -1,4 +1,4 @@
-export interface Judge0SubmissionResponse {
+export type Judge0SubmissionResponse = {
   stdout?: string;
   time: string;
   memory: number;
@@ -10,8 +10,4 @@ export interface Judge0SubmissionResponse {
     id: number;
     description: string;
   };
-}
-
-// export interface Judge0SubmissionResponseBase64 extends Omit<Judge0SubmissionResponse, 'stdout'> {
-//   stdout: Buffer;
-// }
+};

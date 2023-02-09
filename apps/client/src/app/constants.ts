@@ -88,15 +88,15 @@ console.log(data);
 `,
     codemirrorMode: 'text/javascript',
   },
-  {
-    id: 74,
-    name: 'TypeScript',
-    codeTemplate: `
-const fs = require('fs');
-const data = fs.readFileSync(0, 'utf-8');
+  //   {
+  //     id: 74,
+  //     name: 'TypeScript',
+  //     codeTemplate: `
+  // const fs = require('fs');
+  // const data = fs.readFileSync(0, 'utf-8');
 
-console.log(data);  
-`,
-    codemirrorMode: 'text/typescript',
-  },
+  // console.log(data);
+  // `,
+  //     codemirrorMode: 'text/typescript',
+  //   },
 ];

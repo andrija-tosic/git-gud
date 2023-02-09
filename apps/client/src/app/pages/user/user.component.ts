@@ -20,7 +20,7 @@ export class UserComponent {
   constructor(
     private userService: UserService,
     private route: ActivatedRoute,
-    private messageService: MessageService,
+    public messageService: MessageService,
     private router: Router
   ) {
     this.route.paramMap.subscribe((paramMap) => {
@@ -61,13 +61,5 @@ export class UserComponent {
     this.userService.delete(id).subscribe((_) => {
       this.router.navigate(['/register']);
     });
-  }
-
-  onConfirmToast() {
-    this.messageService.clear();
-  }
-
-  onRejectToast() {
-    this.messageService.clear();
   }
 }

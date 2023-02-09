@@ -5,7 +5,7 @@ import { Judge0SubmissionStatus } from '@git-gud/entities';
   name: 'submissionStatus',
 })
 export class SubmissionStatusPipe implements PipeTransform {
-  transform(value: Judge0SubmissionStatus, ...args: unknown[]): string {
+  transform(value: Judge0SubmissionStatus): string {
     //TODO: webpack enum bug
 
     switch (value) {
@@ -22,3 +22,4 @@ export class SubmissionStatusPipe implements PipeTransform {
     }
   }
 }
+``;
