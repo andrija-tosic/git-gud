@@ -33,7 +33,7 @@ import { TabViewModule } from 'primeng/tabview';
 import { ProgrammingLanguagePipe } from './pipes/programming-language.pipe';
 import { ArrayAveragePipe } from './pipes/array-average.pipe';
 import { ChipModule } from 'primeng/chip';
-
+import { TestResultsComponent } from './components/test-result/test-results.component';
 
 @NgModule({
   declarations: [
@@ -50,6 +50,7 @@ import { ChipModule } from 'primeng/chip';
     MessageErrorStatusPipe,
     ProgrammingLanguagePipe,
     ArrayAveragePipe,
+    TestResultsComponent,
   ],
   imports: [
     BrowserModule,
@@ -70,7 +71,8 @@ import { ChipModule } from 'primeng/chip';
     ConfirmDialogModule,
     MarkdownModule.forRoot(),
     ToastModule,
-    TabViewModule,ChipModule
+    TabViewModule,
+    ChipModule,
   ],
   providers: [],
   bootstrap: [AppComponent],
