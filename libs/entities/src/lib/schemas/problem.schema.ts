@@ -3,7 +3,7 @@ import { IsNotEmpty } from 'class-validator';
 import { HydratedDocument, Types } from 'mongoose';
 import { Tag } from '../types';
 import { Difficulty } from '../types/difficulty.enum';
-import { Submission, SubmissionSchema } from './submission.schema';
+import { Submission } from './submission.schema';
 import { TestCase, TestCaseSchema } from './testcase.schema';
 
 export type ProblemDocument = HydratedDocument<Problem>;
@@ -36,8 +36,7 @@ export class Problem {
   @Prop({ type: [TestCaseSchema], required: true })
   testCases: Types.Array<TestCase>;
 
-  @Prop({ type: [SubmissionSchema] })
-  submissions: Types.Array<Submission>;
+  submissions?: Submission[];
 }
 
 export const ProblemSchema = SchemaFactory.createForClass(Problem);

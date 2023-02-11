@@ -5,7 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Problem, ProgrammingLanguage, Submission, User } from '@git-gud/entities';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { BehaviorSubject, combineLatest, filter, map, Observable, Subject, takeUntil, tap } from 'rxjs';
-import { PROGRAMMING_LANGUAGES } from '../../constants';
+import { CODEMIRROR_THEME, PROGRAMMING_LANGUAGES } from '../../constants';
 
 import { ProblemService, Solution } from '../../services/problem.service'; // TODO........
 import { UserService } from '../../services/user.service';
@@ -23,7 +23,7 @@ export class ProblemComponent implements OnDestroy {
   solutions$ = new BehaviorSubject<Solution[]>([]);
   selectedSolution$ = new BehaviorSubject<Solution | null>(null);
 
-  currentSubmission$: Observable<Submission | undefined>;
+  currentSubmission$ = new BehaviorSubject<Submission | undefined>(undefined);
 
   user$ = this.userService.loggedInUser$;
 
@@ -37,7 +37,7 @@ export class ProblemComponent implements OnDestroy {
 
   codemirrorOptions = {
     lineNumbers: true,
-    theme: 'nord',
+    theme: CODEMIRROR_THEME,
     extraKeys: {
       'Ctrl-Space': 'autocomplete',
     },
@@ -46,17 +46,9 @@ export class ProblemComponent implements OnDestroy {
 
   codemirrorOptionsSolution = {
     lineNumbers: true,
-    theme: 'nord',
+    theme: CODEMIRROR_THEME,
     readOnly: true,
     mode: this.languages[0].name.toLowerCase(),
-  };
-
-  readonly codemirrorMarkdownOptions = {
-    lineNumbers: false,
-    theme: 'nord',
-    mode: 'markdown',
-    readOnly: true,
-    lineWrapping: true,
   };
 
   constructor(
@@ -94,24 +86,22 @@ export class ProblemComponent implements OnDestroy {
     });
 
     combineLatest([this.problem$, this.user$, this.selectedLanguage$])
-      .pipe(filter((problemAndUser) => problemAndUser[0] !== null && problemAndUser[1] !== null))
+      .pipe(filter((problemAndUser) => !!problemAndUser[0] && !!problemAndUser[1]))
       .subscribe(([problem, user, selectedLanguage]) => {
         this.languages = PROGRAMMING_LANGUAGES.filter((l) => problem!.programmingLanguagesIds.includes(l.id));
 
         this.changeCodeTemplate(problem!, user!, selectedLanguage);
 
-        this.currentSubmission$ = this.problem$.pipe(
-          map((problem) => {
-            return problem?.submissions.find((s) => {
-              return s.author === user!._id && s.programmingLanguage === selectedLanguage.id;
-            });
-          })
-        );
+        const userSubmission = problem?.submissions?.find((s) => {
+          return s.author === user!._id && s.programmingLanguage === selectedLanguage.id;
+        });
+
+        this.currentSubmission$.next(userSubmission);
       });
   }
 
   changeCodeTemplate(problem: Problem, user: User, selectedLanguage: ProgrammingLanguage) {
-    const userSubmission = problem.submissions.find((s) => {
+    const userSubmission = problem.submissions?.find((s) => {
       return s.author === user._id && s.programmingLanguage === selectedLanguage.id;
     });
 
@@ -127,34 +117,37 @@ export class ProblemComponent implements OnDestroy {
     };
   }
 
-  submitCode(problem: Problem, user: User, selectedLanguage: ProgrammingLanguage) {
+  submitCode(
+    problem: Problem,
+    currentSubmission: Submission | undefined,
+    user: User,
+    selectedLanguage: ProgrammingLanguage
+  ) {
     this.loading = true;
-    const userSubmission = problem.submissions.find((s) => {
-      return s.author === user._id && s.programmingLanguage === selectedLanguage.id;
-    });
 
-    if (userSubmission) {
+    if (currentSubmission) {
       this.problemService
-        .updateSubmission(problem._id, userSubmission._id, {
+        .updateSubmission(currentSubmission._id, {
+          problem: problem._id,
           author: user._id!,
           code: this.code,
           programmingLanguage: selectedLanguage.id,
         })
-        .subscribe((_) => {
-          // this.problem$.next(updatedProblem);
-          console.log(_.submissions);
+        .subscribe((submission) => {
+          this.currentSubmission$.next(submission);
 
           this.loading = false;
         });
     } else {
       this.problemService
-        .createSubmission(problem._id, {
+        .createSubmission({
+          problem: problem._id,
           author: user._id!,
           code: this.code,
           programmingLanguage: selectedLanguage.id,
         })
-        .subscribe((_) => {
-          // this.problem$.next(updatedProblem);
+        .subscribe((submission) => {
+          this.currentSubmission$.next(submission);
 
           this.loading = false;
         });
@@ -179,8 +172,8 @@ export class ProblemComponent implements OnDestroy {
       header: 'Delete Confirmation',
       icon: 'pi pi-info-circle',
       accept: () => {
-        this.problemService.deleteSubmission(problem._id, submission._id).subscribe((problem) => {
-          this.problem$.next(problem);
+        this.problemService.deleteSubmission(submission._id).subscribe((submission) => {
+          this.currentSubmission$.next(undefined);
           this.messageService.add({ severity: 'info', summary: 'Confirmed', detail: 'Subission deleted' });
         });
       },

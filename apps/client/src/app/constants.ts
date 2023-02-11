@@ -8,6 +8,8 @@ export const HTTP_OPTIONS = {
   }),
 };
 
+export const CODEMIRROR_THEME = 'night';
+
 export const PROGRAMMING_LANGUAGES: ProgrammingLanguage[] = [
   {
     id: 50,
@@ -18,12 +20,12 @@ export const PROGRAMMING_LANGUAGES: ProgrammingLanguage[] = [
 #include <stdlib.h>
 #include <string.h>
 int main(void) {
-char text[64];
-scanf("%s", text);
+  char text[64];
+  scanf("%s", text);
 
 
-printf("%s", text);
-return 0;
+  printf("%s", text);
+  return 0;
 }`,
     codemirrorMode: 'text/x-csrc',
   },
@@ -67,13 +69,12 @@ int main()
 import java.util.Scanner;
 
 class Main {
-
-public static void main(String[] args) {
-  Scanner scanner = new Scanner(System.in);
-  String s = scanner.nextLine();
-  
-  System.out.println(s);
-}
+  public static void main(String[] args) {
+    Scanner scanner = new Scanner(System.in);
+    String s = scanner.nextLine();
+    
+    System.out.println(s);
+  }
 }`,
     codemirrorMode: 'text/x-java',
   },

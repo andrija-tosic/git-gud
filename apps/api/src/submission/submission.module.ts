@@ -1,17 +1,19 @@
 import { Module } from '@nestjs/common';
-import { ProblemService } from './problem.service';
-import { ProblemController } from './problem.controller';
+import { SubmissionService } from './submission.service';
+import { SubmissionController } from './submission.controller';
 import { Problem, ProblemSchema, Submission, SubmissionSchema } from '@git-gud/entities';
 import { MongooseModule } from '@nestjs/mongoose';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
   imports: [
+    HttpModule,
     MongooseModule.forFeature([
       { name: Submission.name, schema: SubmissionSchema },
       { name: Problem.name, schema: ProblemSchema },
     ]),
   ],
-  controllers: [ProblemController],
-  providers: [ProblemService],
+  controllers: [SubmissionController],
+  providers: [SubmissionService],
 })
-export class ProblemModule {}
+export class SubmissionModule {}

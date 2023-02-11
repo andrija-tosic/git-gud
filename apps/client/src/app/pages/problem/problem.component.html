@@ -4,13 +4,16 @@
       <p-tabView styleClass="tabview-custom">
         <p-tabPanel>
           <ng-template pTemplate="header">
-            <i class="pi pi-question-circle"></i>
-            <span>Problem</span>
+            <div class="flex gap-2 align-items-center">
+              <i class="pi pi-question-circle"></i>
+              <span>Problem</span>
+            </div>
           </ng-template>
           <div class="flex justify-content-between flex-wrap gap-3">
             <div class="flex flex-column flex-grow-1 gap-3" style="width: 500px">
               <h1>{{ problem.title }}</h1>
-              <div class="flex">
+              <div><p-chip *ngFor="let tag of problem.tags" [label]="tag" styleClass="mr-2"></p-chip></div>
+              <div class="flex gap-3">
                 <button
                   pButton
                   icon="pi pi-pencil"
@@ -37,28 +40,31 @@
 
               <markdown [data]="problem.text" [disableSanitizer]="true"></markdown>
 
-              <div
-                class="surface-card p-4 shadow-2 border-round w-full lg:w-6 m-3"
-                *ngFor="let testCase of problem.testCases; let i = index"
-              >
-                <h4>Testcase {{ i + 1 }}</h4>
-                <div>
-                  Input: <code>{{ testCase.input }}</code>
-                </div>
-                <div>
-                  Expected output: <code>{{ testCase.desiredOutput }}</code>
-                </div>
-                <div>
-                  CPU time limit: <code>{{ testCase.cpuTimeLimit ? testCase.cpuTimeLimit : 'None' }}</code>
-                </div>
-                <div>
-                  Memory usage limit:
-                  <code>{{ testCase.memoryUsageLimit ? testCase.memoryUsageLimit + ' bytes' : 'None' }}</code>
+              <div class="flex flex-column">
+                <div
+                  class="surface-card p-4 shadow-2 border-round w-full lg:w-6 m-3"
+                  *ngFor="let testCase of problem.testCases; let i = index"
+                >
+                  <h4>Testcase {{ i + 1 }}</h4>
+                  <div>
+                    Input: <code>{{ testCase.input }}</code>
+                  </div>
+                  <div>
+                    Expected output: <code>{{ testCase.desiredOutput }}</code>
+                  </div>
+                  <div>
+                    CPU time limit:
+                    <code>{{ testCase.cpuTimeLimit ? testCase.cpuTimeLimit + ' seconds' : 'None' }} </code>
+                  </div>
+                  <div>
+                    Memory usage limit:
+                    <code>{{ testCase.memoryUsageLimit ? testCase.memoryUsageLimit + ' bytes' : 'None' }}</code>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div class="flex-grow-1" style="width: 500px">
+            <div class="flex-grow-1 p-4 shadow-2 border-round darker-surface-card" style="width: 500px">
               <ng-container *ngIf="this.selectedLanguage$ | async as selectedLanguage">
                 <div class="flex flex-row align-items-center">
                   <h4>Language</h4>
@@ -78,58 +84,68 @@
                   [options]="this.codemirrorOptions"
                 ></ngx-codemirror>
                 <div class="flex flex-row-reverse justify-content-between">
-                  <button
-                    pButton
-                    label="Submit"
-                    class="p-button-outlined"
-                    [loading]="loading"
-                    (click)="submitCode(problem, user, selectedLanguage)"
-                  ></button>
-                  <ng-container *ngIf="this.currentSubmission$ | async as currentSubmission">
+                  <ng-container *ngIf="this.currentSubmission$ | async as currentSubmission; else createSubmission">
+                    <button
+                      pButton
+                      label="Submit"
+                      class="p-button-outlined"
+                      [loading]="loading"
+                      (click)="submitCode(problem, currentSubmission, user, selectedLanguage)"
+                    ></button>
                     <button
                       pButton
                       label="Delete submission"
                       icon="pi pi-trash"
-                      iconPos="right"
                       class="p-button-outlined p-button-danger"
-                      [loading]="loading"
+                      [disabled]="loading"
                       (click)="deleteSubmission(problem, currentSubmission)"
                     ></button>
                   </ng-container>
+                  <ng-template #createSubmission>
+                    <button
+                      pButton
+                      label="Submit"
+                      class="p-button-outlined"
+                      [loading]="loading"
+                      (click)="submitCode(problem, undefined, user, selectedLanguage)"
+                    ></button>
+                  </ng-template>
                 </div>
 
                 <ng-container *ngIf="this.currentSubmission$ | async as currentSubmission; else noSubmission">
-                  <div
-                    class="surface-card p-4 shadow-2 border-round w-full lg:w-6 m-3"
-                    *ngFor="let testResult of currentSubmission.testResults; let i = index"
-                  >
-                    <h4>Testcase {{ i + 1 }}</h4>
-                    <p>
-                      Status: <code>{{ loading ? 'Running...' : (testResult.status | submissionStatus) }}</code>
-                    </p>
-                    <ng-container *ngIf="!loading">
-                      <p *ngIf="testResult.output">
-                        Output: <code>{{ testResult.output }}</code>
+                  <div class="flex flex-column align-items-center">
+                    <div
+                      class="surface-card p-4 shadow-2 border-round w-full m-3"
+                      *ngFor="let testResult of currentSubmission.testResults; let i = index"
+                    >
+                      <h4>Testcase {{ i + 1 }}</h4>
+                      <p>
+                        Status: <code>{{ loading ? 'Running...' : (testResult.status | submissionStatus) }}</code>
                       </p>
-                      <p *ngIf="testResult.message">
-                        Message:
-                        <code>{{ testResult.message | messageErrorStatus }}</code>
-                      </p>
-                      <p *ngIf="testResult.stderr">
-                        Standard error output: <code>{{ testResult.stderr }}</code>
-                      </p>
-                      <p *ngIf="testResult.compileOutput">
-                        Compiler output: <code>{{ testResult.compileOutput }}</code>
-                      </p>
-                      <p *ngIf="testResult.time">
-                        Time taken: <code>{{ testResult.time }} seconds</code>
-                      </p>
-                      <p *ngIf="testResult.memory">
-                        Memory used: <code>{{ testResult.memory }} bytes</code>
-                      </p>
-                      <p *ngIf="testResult.cpuTimeLimitExceeded">⚠️ CPU time limit exceeded</p>
-                      <p *ngIf="testResult.memoryLimitExceeded">⚠️ Memory usage limit exceeded</p>
-                    </ng-container>
+                      <ng-container *ngIf="!loading">
+                        <p *ngIf="testResult.output">
+                          Output: <code>{{ testResult.output }}</code>
+                        </p>
+                        <p *ngIf="testResult.message">
+                          Message:
+                          <code>{{ testResult.message | messageErrorStatus }}</code>
+                        </p>
+                        <p *ngIf="testResult.stderr">
+                          Standard error output: <code>{{ testResult.stderr }}</code>
+                        </p>
+                        <p *ngIf="testResult.compileOutput">
+                          Compiler output: <code>{{ testResult.compileOutput }}</code>
+                        </p>
+                        <p *ngIf="testResult.time">
+                          Time taken: <code>{{ testResult.time }} seconds</code>
+                        </p>
+                        <p *ngIf="testResult.memory">
+                          Memory used: <code>{{ testResult.memory }} bytes</code>
+                        </p>
+                        <p *ngIf="testResult.cpuTimeLimitExceeded">⚠️ CPU time limit exceeded</p>
+                        <p *ngIf="testResult.memoryLimitExceeded">⚠️ Memory usage limit exceeded</p>
+                      </ng-container>
+                    </div>
                   </div>
                 </ng-container>
                 <ng-template #noSubmission>
@@ -141,8 +157,10 @@
         </p-tabPanel>
         <p-tabPanel>
           <ng-template pTemplate="header">
-            <i class="pi pi-check-circle"></i>
-            <span>Solutions</span>
+            <div class="flex gap-2 align-items-center">
+              <i class="pi pi-check-circle"></i>
+              <span>Solutions</span>
+            </div>
           </ng-template>
           <ng-template pTemplate="content">
             <ng-container
@@ -152,6 +170,7 @@
                 <div class="flex flex-column flex-grow-1" style="width: 500px">
                   <div>
                     <h1>{{ problem.title }}</h1>
+                    <div><p-chip *ngFor="let tag of problem.tags" [label]="tag" styleClass="mr-2"></p-chip></div>
                     <h3>{{ vm.solutions!.length > 0 ? 'Solutions' : 'No solutions for this problem yet.' }}</h3>
                   </div>
                   <p-table *ngIf="vm.solutions!.length > 0" [value]="vm.solutions!" tableStyle="width:100%">
@@ -184,7 +203,7 @@
                   </p-table>
                 </div>
 
-                <div class="flex-grow-1" *ngIf="vm.selectedSolution">
+                <div class="flex-grow-1 p-4 darker-surface-card" *ngIf="vm.selectedSolution">
                   <ng-container *ngIf="this.selectedLanguage$ | async as selectedLanguage">
                     <div class="flex flex-row align-items-center">
                       <h4>Language: {{ vm.selectedSolution!.programmingLanguage | programmingLanguage }}</h4>
@@ -195,37 +214,39 @@
                       [options]="this.codemirrorOptionsSolution"
                     ></ngx-codemirror>
 
-                    <div
-                      class="surface-card p-4 shadow-2 border-round w-full lg:w-6 m-3"
-                      *ngFor="let testResult of vm.selectedSolution!.testResults; let i = index"
-                    >
-                      <h4>Testcase {{ i + 1 }}</h4>
-                      <p>
-                        Status: <code>{{ loading ? 'Running...' : (testResult.status | submissionStatus) }}</code>
-                      </p>
-                      <ng-container *ngIf="!loading">
-                        <p *ngIf="testResult.output">
-                          Output: <code>{{ testResult.output }}</code>
+                    <div class="flex flex-column align-items-center">
+                      <div
+                        class="surface-card p-4 shadow-2 border-round w-full m-3"
+                        *ngFor="let testResult of vm.selectedSolution!.testResults; let i = index"
+                      >
+                        <h4>Testcase {{ i + 1 }}</h4>
+                        <p>
+                          Status: <code>{{ loading ? 'Running...' : (testResult.status | submissionStatus) }}</code>
                         </p>
-                        <p *ngIf="testResult.message">
-                          Message:
-                          <code>{{ testResult.message | messageErrorStatus }}</code>
-                        </p>
-                        <p *ngIf="testResult.stderr">
-                          Standard error output: <code>{{ testResult.stderr }}</code>
-                        </p>
-                        <p *ngIf="testResult.compileOutput">
-                          Compiler output: <code>{{ testResult.compileOutput }}</code>
-                        </p>
-                        <p *ngIf="testResult.time">
-                          Time taken: <code>{{ testResult.time }} seconds</code>
-                        </p>
-                        <p *ngIf="testResult.memory">
-                          Memory used: <code>{{ testResult.memory }} bytes</code>
-                        </p>
-                        <p *ngIf="testResult.cpuTimeLimitExceeded">⚠️ CPU time limit exceeded</p>
-                        <p *ngIf="testResult.memoryLimitExceeded">⚠️ Memory usage limit exceeded</p>
-                      </ng-container>
+                        <ng-container *ngIf="!loading">
+                          <p *ngIf="testResult.output">
+                            Output: <code>{{ testResult.output }}</code>
+                          </p>
+                          <p *ngIf="testResult.message">
+                            Message:
+                            <code>{{ testResult.message | messageErrorStatus }}</code>
+                          </p>
+                          <p *ngIf="testResult.stderr">
+                            Standard error output: <code>{{ testResult.stderr }}</code>
+                          </p>
+                          <p *ngIf="testResult.compileOutput">
+                            Compiler output: <code>{{ testResult.compileOutput }}</code>
+                          </p>
+                          <p *ngIf="testResult.time">
+                            Time taken: <code>{{ testResult.time }} seconds</code>
+                          </p>
+                          <p *ngIf="testResult.memory">
+                            Memory used: <code>{{ testResult.memory }} bytes</code>
+                          </p>
+                          <p *ngIf="testResult.cpuTimeLimitExceeded">⚠️ CPU time limit exceeded</p>
+                          <p *ngIf="testResult.memoryLimitExceeded">⚠️ Memory usage limit exceeded</p>
+                        </ng-container>
+                      </div>
                     </div>
                     <ng-template #noSubmission
                       ><h3>No code submitted in {{ selectedLanguage.name }} yet.</h3></ng-template

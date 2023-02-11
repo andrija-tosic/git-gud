@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { IsNotEmpty } from 'class-validator';
 import { HydratedDocument, Types } from 'mongoose';
+import { Problem } from './problem.schema';
 import { TestResult } from './test-result';
 import { User } from './user.schema';
 
@@ -9,6 +10,10 @@ export type SubmissionDocument = HydratedDocument<Submission>;
 @Schema()
 export class Submission {
   _id: string;
+
+  @IsNotEmpty()
+  @Prop({ type: Types.ObjectId, ref: Problem.name })
+  problem: string;
 
   @IsNotEmpty()
   @Prop({ type: Types.ObjectId, ref: User.name })

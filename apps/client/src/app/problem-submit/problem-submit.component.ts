@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
-import { PROGRAMMING_LANGUAGES } from '../constants';
+import { CODEMIRROR_THEME, PROGRAMMING_LANGUAGES } from '../constants';
 import { ProblemService } from '../services/problem.service';
 
 @Component({
@@ -16,7 +16,7 @@ export class ProblemSubmitComponent {
   problem$ = this.problemService.selectedProblem$;
 
   codemirrorOptions = {
-    theme: 'nord',
+    theme: CODEMIRROR_THEME,
     extraKeys: {
       'Ctrl-Space': 'autocomplete',
     },

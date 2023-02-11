@@ -7,6 +7,8 @@
 
 @import 'codemirror/lib/codemirror';
 @import 'codemirror/theme/nord';
+@import 'codemirror/theme/material-palenight';
+@import 'codemirror/theme/night';
 
 body {
   background-color: var(--surface-a);
@@ -14,26 +16,33 @@ body {
   color: var(--text-color);
 }
 
+:root {
+  --surface-card: rgb(11, 33, 63);
+  --darker-surface-card: rgb(14, 28, 48);
+}
+
 button,
 .p-button {
   font-family: monospace !important;
 }
 
-ngx-codemirror {
+.CodeMirror {
   margin: 1em;
   border-radius: 10px;
-}
-
-.CodeMirror {
-  height: 75vh !important;
+  height: 66vh !important;
+  @extend .shadow-5;
 }
 
 .surface-card {
-  background: rgb(11,33,63) !important;
+  background: var(--surface-card) !important;
+}
+
+.darker-surface-card {
+  background: var(--darker-surface-card);
 }
 
 .p-selectbutton .p-button {
-  border: 1px solid #93C5FD !important;
+  border: 1px solid #93c5fd !important;
 }
 
 .p-chip {

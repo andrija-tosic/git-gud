@@ -54,22 +54,16 @@ export class ProblemService {
       .pipe(tap((problem) => this.selectedProblem$.next(problem)));
   }
 
-  createSubmission(id: string, dto: CreateSubmissionDto) {
-    return this.http
-      .post<Problem>(API_URL + '/problems/' + id + '/submissions/', dto, HTTP_OPTIONS)
-      .pipe(tap((problem) => this.selectedProblem$.next(problem)));
+  createSubmission(dto: CreateSubmissionDto) {
+    return this.http.post<Submission>(API_URL + '/submissions/', dto, HTTP_OPTIONS);
   }
 
-  updateSubmission(id: string, submissionId: string, dto: UpdateSubmissionDto) {
-    return this.http
-      .patch<Problem>(API_URL + '/problems/' + id + '/submissions/' + submissionId, dto, HTTP_OPTIONS)
-      .pipe(tap((problem) => this.selectedProblem$.next(problem)));
+  updateSubmission(id: string, dto: UpdateSubmissionDto) {
+    return this.http.patch<Submission>(API_URL + '/submissions/' + id, dto, HTTP_OPTIONS);
   }
 
-  deleteSubmission(id: string, submissionId: string) {
-    return this.http
-      .delete<Problem>(API_URL + '/problems/' + id + '/submissions/' + submissionId)
-      .pipe(tap((problem) => this.selectedProblem$.next(problem)));
+  deleteSubmission(id: string) {
+    return this.http.delete<Submission>(API_URL + '/submissions/' + id);
   }
 
   searchProblems(problemFilters: ProblemSearchFilters) {
@@ -80,23 +74,7 @@ export class ProblemService {
     return this.http.post<Problem>(API_URL + '/problems/search/random', problemFilters, HTTP_OPTIONS);
   }
 
-  upvoteProblem(id: string) {
-    return this.http.post<Problem>(API_URL + '/problems/' + id + 'upvote', {});
-  }
-
-  removeProblemUpvote(id: string) {
-    return this.http.delete<Problem>(API_URL + '/problems/' + id + 'upvote', {});
-  }
-
-  downvoteProblem(id: string) {
-    return this.http.post<Problem>(API_URL + '/problems/' + id + 'downvote', {});
-  }
-
-  removeProblemDownvote(id: string) {
-    return this.http.delete<Problem>(API_URL + '/problems/' + id + 'downvote', {});
-  }
-
   problemSolutions(id: string) {
-    return this.http.get<Solution[]>(API_URL + '/problems/' + id + '/solutions');
+    return this.http.get<Solution[]>(API_URL + '/submissions/' + id + '/solutions');
   }
 }
