@@ -25,7 +25,7 @@
       Time taken: <code>{{ testResult.time }} seconds</code>
     </p>
     <p *ngIf="testResult.memory">
-      Memory used: <code>{{ testResult.memory }} bytes</code>
+      Memory used: <code>{{ testResult.memory | humanReadableMemory }}</code>
     </p>
     <p *ngIf="testResult.cpuTimeLimitExceeded">⚠️ CPU time limit exceeded</p>
     <p *ngIf="testResult.memoryLimitExceeded">⚠️ Memory usage limit exceeded</p>

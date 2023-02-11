@@ -34,6 +34,7 @@ import { ProgrammingLanguagePipe } from './pipes/programming-language.pipe';
 import { ArrayAveragePipe } from './pipes/array-average.pipe';
 import { ChipModule } from 'primeng/chip';
 import { TestResultsComponent } from './components/test-result/test-results.component';
+import { HumanReadableMemoryPipe } from './pipes/human-readable-memory.pipe';
 
 @NgModule({
   declarations: [
@@ -51,6 +52,7 @@ import { TestResultsComponent } from './components/test-result/test-results.comp
     ProgrammingLanguagePipe,
     ArrayAveragePipe,
     TestResultsComponent,
+    HumanReadableMemoryPipe,
   ],
   imports: [
     BrowserModule,
