@@ -1,6 +1,7 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Res, HttpStatus } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto, UpdateUserDto } from '@git-gud/entities';
+import { Response } from 'express';
 
 @Controller('users')
 export class UserController {
@@ -12,8 +13,13 @@ export class UserController {
   }
 
   @Get('/login/:email')
-  login(@Param('email') email: string) {
-    return this.userService.login(email);
+  async login(@Param('email') email: string, @Res() res: Response) {
+    const user = await this.userService.login(email);
+    if (!user) {
+      res.status(HttpStatus.NOT_FOUND).send();
+    } else {
+      res.send(user);
+    }
   }
 
   @Get(':id')

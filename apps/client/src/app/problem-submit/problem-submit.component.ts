@@ -67,7 +67,6 @@ export class ProblemSubmitComponent {
     route.paramMap.subscribe((paramMap) => {
       this.problemId = paramMap.get('id');
       if (this.problemId) {
-        // TODO: this.problem$.pipe(take(1))
         this.problemService.getProblem(this.problemId).subscribe((problem) => {
           this.form.patchValue({
             _id: problem._id,

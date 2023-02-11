@@ -1,6 +1,5 @@
 <p-toast position="bottom-right" (onClose)="this.messageService.clear()" [baseZIndex]="5000">
   <ng-template let-message pTemplate="message">
-    
     <div class="flex flex-column" style="flex: 1">
       <div class="text-center">
         <i class="pi pi-exclamation-triangle" style="font-size: 3rem"></i>
@@ -25,25 +24,29 @@
 
     <ng-template #notEditing>
       <div class="surface-card p-4 shadow-2 border-round lg:w-6 m-3">
-      <div class="block text-900 font-medium mb-2">Name: {{ user.name }}</div>
-      <div class="block text-900 font-medium mb-2">Email: {{ user.email }}</div></div>
+        <div class="block text-900 font-medium mb-2">Name: {{ user.name }}</div>
+        <div class="block text-900 font-medium mb-2">Email: {{ user.email }}</div>
+      </div>
     </ng-template>
 
-    <div class="flex flex-end">
+    <div class="flex justify-content-between lg:w-6">
       <button
         pButton
         class="p-button-outlined"
         [label]="this.editing ? 'Confirm' : 'Edit'"
         (click)="editButtonClick(user._id!)"
       ></button>
-    </div>
-    <div class="flex flex-end">
-      <button
-        pButton
-        class="p-button-danger p-button-outlined"
-        label="Delete account"
-        (click)="onDeleteClick(user._id!)"
-      ></button>
+
+      <ng-container *ngIf="!this.editing">
+        <button pButton class="p-button-outlined" label="Log out" (click)="logout()"></button>
+
+        <button
+          pButton
+          class="p-button-danger p-button-outlined"
+          label="Delete account"
+          (click)="onDeleteClick(user._id!)"
+        ></button>
+      </ng-container>
     </div>
   </div>
 </ng-container>

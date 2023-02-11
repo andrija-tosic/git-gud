@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { User } from '@git-gud/entities';
-import { BehaviorSubject, filter, Observable } from 'rxjs';
+import { BehaviorSubject, filter } from 'rxjs';
 import { UserService } from '../../services/user.service';
 
 @Component({

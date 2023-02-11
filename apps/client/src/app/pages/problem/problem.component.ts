@@ -3,7 +3,7 @@
 import { Component, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Problem, ProgrammingLanguage, Submission, User } from '@git-gud/entities';
-import { ConfirmationService, ConfirmEventType, MessageService } from 'primeng/api';
+import { ConfirmationService, MessageService } from 'primeng/api';
 import { BehaviorSubject, combineLatest, filter, map, Observable, Subject, takeUntil, tap } from 'rxjs';
 import { PROGRAMMING_LANGUAGES } from '../../constants';
 

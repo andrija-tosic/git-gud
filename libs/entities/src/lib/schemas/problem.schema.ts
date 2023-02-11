@@ -30,7 +30,7 @@ export class Problem {
 
   @IsNotEmpty()
   @Prop({ type: [String], enum: Tag, required: true })
-  tags: (typeof Tag)[];
+  tags: Tag[];
 
   @IsNotEmpty()
   @Prop({ type: [TestCaseSchema], required: true })
@@ -42,6 +42,6 @@ export class Problem {
 
 export const ProblemSchema = SchemaFactory.createForClass(Problem);
 
-ProblemSchema.index({ title: 'text' });
+// ProblemSchema.index({ title: 'text' });
 ProblemSchema.index({ difficulty: 1 });
 ProblemSchema.index({ tags: 1 });

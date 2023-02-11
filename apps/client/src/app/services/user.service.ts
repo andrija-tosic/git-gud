@@ -32,7 +32,11 @@ export class UserService {
   }
 
   login(email: string): Observable<User> {
-    return this.http.get<User>(API_URL + '/users/login/' + email).pipe(tap((user) => this.loggedInUser$.next(user)));
+    return this.http.get<User>(API_URL + '/users/login/' + email).pipe(
+      tap((user) => {
+        this.loggedInUser$.next(user);
+      })
+    );
   }
 
   register(createUserDto: CreateUserDto): Observable<User> {
@@ -52,5 +56,9 @@ export class UserService {
 
   delete(id: string) {
     return this.http.delete(API_URL + '/users/' + id);
+  }
+
+  logout() {
+    window.localStorage.removeItem('user');
   }
 }

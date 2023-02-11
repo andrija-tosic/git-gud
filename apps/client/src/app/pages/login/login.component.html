@@ -1,7 +1,20 @@
+<p-toast position="bottom-right" (onClose)="this.messageService.clear()" [baseZIndex]="5000">
+  <ng-template let-message pTemplate="message">
+    <div class="flex flex-column" style="flex: 1">
+      <div class="text-center">
+        <i class="pi pi-exclamation-triangle" style="font-size: 3rem"></i>
+        <h4>{{ message.summary }}</h4>
+        <p>{{ message.detail }}</p>
+      </div>
+    </div>
+  </ng-template>
+</p-toast>
+
 <div class="flex align-items-center justify-content-center">
   <div class="surface-card p-4 shadow-2 border-round w-full lg:w-6">
     <div class="text-center mb-5">
-      <div class="text-900 text-3xl font-medium mb-3">git gud</div>
+      <h1><code>git gud</code></h1>
+      <h2>Login</h2>
     </div>
 
     <div>
@@ -9,8 +22,8 @@
       <input id="email1" type="text" placeholder="Email address" pInputText class="w-full mb-3" [(ngModel)]="email" />
 
       <div class="flex justify-content-between">
-        <button pButton label="Login" icon="pi pi-user" class="" (click)="login()"></button>
-        <button pButton label="Register" icon="pi pi-user" class="" (click)="redirectToRegister()"></button>
+        <button pButton label="Submit" class="p-button-outlined" (click)="login()"></button>
+        <button pButton class="p-button-link" [routerLink]="['/register']">Register</button>
       </div>
     </div>
   </div>

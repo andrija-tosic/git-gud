@@ -9,30 +9,28 @@
           </ng-template>
           <div class="flex justify-content-between flex-wrap gap-3">
             <div class="flex flex-column flex-grow-1 gap-3" style="width: 500px">
-              <div class="flex flex-row justify-content-between">
-                <h1>{{ problem.title }}</h1>
+              <h1>{{ problem.title }}</h1>
+              <div class="flex">
+                <button
+                  pButton
+                  icon="pi pi-pencil"
+                  label="Edit"
+                  class="p-button-outlined"
+                  (click)="this.router.navigate(['/problem-submit/' + problem._id])"
+                ></button>
 
-                <div class="flex">
-                  <button
-                    pButton
-                    label="Edit"
-                    class="p-button-outlined"
-                    (click)="this.router.navigate(['/problem-submit/' + problem._id])"
-                  ></button>
-
-                  <p-confirmDialog
-                    [style]="{ width: '50vw' }"
-                    [baseZIndex]="10000"
-                    rejectButtonStyleClass="p-button-text"
-                  ></p-confirmDialog>
-                  <button
-                    pButton
-                    (click)="deleteProblem(problem)"
-                    icon="pi pi-times"
-                    label="Delete"
-                    class="p-button-danger p-button-outlined"
-                  ></button>
-                </div>
+                <p-confirmDialog
+                  [style]="{ width: '50vw' }"
+                  [baseZIndex]="10000"
+                  rejectButtonStyleClass="p-button-text"
+                ></p-confirmDialog>
+                <button
+                  pButton
+                  (click)="deleteProblem(problem)"
+                  icon="pi pi-trash"
+                  label="Delete"
+                  class="p-button-danger p-button-outlined"
+                ></button>
               </div>
 
               <h4>Difficulty: {{ problem.difficulty | problemDifficulty }}</h4>
@@ -91,14 +89,13 @@
                     <button
                       pButton
                       label="Delete submission"
-                      icon="pi pi-times"
+                      icon="pi pi-trash"
                       iconPos="right"
                       class="p-button-outlined p-button-danger"
                       [loading]="loading"
                       (click)="deleteSubmission(problem, currentSubmission)"
                     ></button>
                   </ng-container>
-                  
                 </div>
 
                 <ng-container *ngIf="this.currentSubmission$ | async as currentSubmission; else noSubmission">

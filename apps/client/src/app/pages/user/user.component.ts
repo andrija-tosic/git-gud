@@ -62,4 +62,9 @@ export class UserComponent {
       this.router.navigate(['/register']);
     });
   }
+
+  logout() {
+    this.userService.logout();
+    this.router.navigate(['/login']);
+  }
 }

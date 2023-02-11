@@ -14,8 +14,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { FilterQuery, Model, PipelineStage, Types } from 'mongoose';
 import { CreateSubmissionDto, UpdateSubmissionDto, CreateProblemDto, UpdateProblemDto } from '@git-gud/entities';
 import { HttpService } from '@nestjs/axios';
-import { filter, repeat, take, catchError, lastValueFrom } from 'rxjs';
-import { JUDGE0_API } from '../constants';
+import { catchError, lastValueFrom, interval, switchMap, takeWhile, tap } from 'rxjs';
+import { JUDGE0_API, MONGODB_PROBLEMS_SEARCH_INDEX } from '../constants';
 
 @Injectable()
 export class ProblemService {
@@ -77,7 +77,7 @@ export class ProblemService {
         } as Judge0SubmissionRequest)
     );
 
-    // this.logger.log('Sending submissions to Judge0', judge0Submissions);
+    this.logger.log('Sending submissions to Judge0', judge0Submissions);
 
     const { data: tokenResponses } = await lastValueFrom(
       this.http
@@ -86,7 +86,7 @@ export class ProblemService {
         })
         .pipe(
           catchError((e) => {
-            // console.log(e);
+            console.log(e);
             // this.logger.error(e.response.data, e.response.status);
             throw new HttpException(e.response.data, e.response.status);
           })
@@ -98,33 +98,33 @@ export class ProblemService {
     const {
       data: { submissions: submissionResults },
     } = await lastValueFrom(
-      this.http
-        .get<{ submissions: Judge0SubmissionResponse[] }>(
-          JUDGE0_API + '/submissions/batch?tokens=' + tokens.join(',') + '&base64_encoded=true'
-        )
-        .pipe(
-          repeat({ delay: 1500 }),
-          filter((res) => {
-            const {
-              data: { submissions },
-            } = res;
-            this.logger.log('Judge0 submission status', submissions);
-            return submissions.every(
+      interval(1500).pipe(
+        switchMap(() =>
+          this.http
+            .get<{ submissions: Judge0SubmissionResponse[] }>(
+              JUDGE0_API + '/submissions/batch?tokens=' + tokens.join(',') + '&base64_encoded=true'
+            )
+            .pipe(
+              tap(({ data: { submissions } }) => {
+                this.logger.log('Judge0 submission status', submissions);
+              }),
+              catchError((e) => {
+                console.log(e);
+                throw new HttpException(e.response?.data, e.response?.status);
+              })
+            )
+        ),
+        takeWhile(
+          ({ data: { submissions } }) =>
+            submissions.every(
               (submission) =>
-                submission.status.id !== Judge0SubmissionStatus.InQueue &&
-                submission.status.id !== Judge0SubmissionStatus.Processing
-            );
-          }),
-          take(1),
-          catchError((e) => {
-            console.log(e);
-            // this.logger.error(e.response?.data, e.response?.status);
-            throw new HttpException(e.response?.data, e.response?.status);
-          })
+                submission.status.id === Judge0SubmissionStatus.InQueue ||
+                submission.status.id === Judge0SubmissionStatus.Processing
+            ),
+          true
         )
+      )
     );
-
-    console.log('submissions', submissionResults);
 
     submissionDto.testResults = submissionResults.map(
       (submissionResponse, index) =>
@@ -221,12 +221,12 @@ export class ProblemService {
       filterQuery.tags = { $in: searchFilters.tags };
     }
 
-    const aggregateArg: PipelineStage[] = [];
+    const aggregateArgs: PipelineStage[] = [];
 
     if (searchFilters.title?.trim().length > 0) {
-      aggregateArg.push({
+      aggregateArgs.push({
         $search: {
-          index: 'search_idx',
+          index: MONGODB_PROBLEMS_SEARCH_INDEX,
 
           wildcard: {
             query: '*' + searchFilters.title + '*',
@@ -237,9 +237,9 @@ export class ProblemService {
       });
     }
 
-    aggregateArg.push({ $match: filterQuery });
+    aggregateArgs.push({ $match: filterQuery });
 
-    return this.problemModel.aggregate(aggregateArg).limit(50).exec();
+    return this.problemModel.aggregate(aggregateArgs).limit(50).exec();
   }
 
   async randomProblem(searchFilters: ProblemSearchFilters) {
@@ -261,12 +261,12 @@ export class ProblemService {
       filterQuery.tags = { $in: searchFilters.tags };
     }
 
-    const aggregateArg: PipelineStage[] = [];
+    const aggregateArgs: PipelineStage[] = [];
 
     if (searchFilters.title.trim().length > 0) {
-      aggregateArg.push({
+      aggregateArgs.push({
         $search: {
-          index: 'search_idx',
+          index: MONGODB_PROBLEMS_SEARCH_INDEX,
 
           wildcard: {
             query: '*' + searchFilters.title + '*',
@@ -277,9 +277,9 @@ export class ProblemService {
       });
     }
 
-    aggregateArg.push({ $match: filterQuery });
+    aggregateArgs.push({ $match: filterQuery });
 
-    return (await this.problemModel.aggregate(aggregateArg).sample(1).exec())[0] as Promise<Problem>;
+    return (await this.problemModel.aggregate(aggregateArgs).sample(1).exec())[0] as Promise<Problem>;
   }
 
   async problemSolutions(id: string) {
@@ -289,7 +289,7 @@ export class ProblemService {
       .lean()
       .exec();
 
-    const retval = submissions
+    const solutions = submissions
       .filter((submission) =>
         submission.testResults.every((testResult) => testResult.status === Judge0SubmissionStatus.Accepted)
       )
@@ -301,8 +301,13 @@ export class ProblemService {
             testCase: testCases.find((testCase) => testCase._id.toString() === testResult.testCase.toString()),
           })),
         };
+      })
+      .sort((s1, s2) => {
+        const timeSum1 = s1.testResults.reduce((acc, tr) => acc + Number(tr.time), 0);
+        const timeSum2 = s2.testResults.reduce((acc, tr) => acc + Number(tr.time), 0);
+        return timeSum1 - timeSum2;
       });
 
-    return retval;
+    return solutions;
   }
 }
