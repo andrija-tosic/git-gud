@@ -36,6 +36,12 @@ export class ProblemService {
       .pipe(tap((problem) => this.selectedProblem$.next(problem)));
   }
 
+  getProblemWithUserSubmissions(id: string, userId: string) {
+    return this.http
+      .get<Problem>(API_URL + '/problems/' + id + '/' + userId)
+      .pipe(tap((problem) => this.selectedProblem$.next(problem)));
+  }
+
   createProblem(dto: CreateProblemDto) {
     return this.http
       .post<Problem>(API_URL + '/problems/', dto, HTTP_OPTIONS)

@@ -16,18 +16,22 @@ export class ProblemService {
     const problem = await this.problemModel.create(createProblemDto);
     return problem.save();
   }
+  
+  findOne(id: string) {
+    return this.problemModel.findById(id).lean().exec();
+  }
 
-  async findOne(id: string) {
+  async findOneWithUserSubmissions(id: string, userId: string) {
     const problem = await this.problemModel.findById(id).lean().exec();
 
-    const submissions = (await this.submissionModel.find({ problem: id }).lean().exec()) ?? [];
+    const submissions = (await this.submissionModel.find({ problem: id, author: userId }).lean().exec()) ?? [];
 
     return <Problem>{
       ...problem,
       submissions,
     };
   }
-
+  
   async update(id: string, updateProblemDto: UpdateProblemDto) {
     const problem = await this.problemModel
       .findByIdAndUpdate(id, updateProblemDto, {

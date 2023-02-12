@@ -15,6 +15,11 @@ export class ProblemController {
   findOne(@Param('id') id: string) {
     return this.problemService.findOne(id);
   }
+  
+  @Get(':id/:userId')
+  findOneWithUserSubmissions(@Param('id') id: string, @Param('userId') userId: string) {
+    return this.problemService.findOneWithUserSubmissions(id, userId);
+  }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateProblemDto: UpdateProblemDto) {

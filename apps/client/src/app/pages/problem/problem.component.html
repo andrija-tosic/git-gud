@@ -1,7 +1,7 @@
 <ng-container *ngIf="this.problem$ | async as problem">
   <ng-container *ngIf="this.user$ | async as user">
     <div class="card">
-      <p-tabView styleClass="tabview-custom">
+      <p-tabView styleClass="tabview-custom" (activeIndexChange)="onTabViewIndexChange($event, problem)">
         <p-tabPanel>
           <ng-template pTemplate="header">
             <div class="flex gap-2 align-items-center">
@@ -58,7 +58,7 @@
                   </div>
                   <div>
                     Memory usage limit:
-                    <code>{{ testCase.memoryUsageLimit ? testCase.memoryUsageLimit + ' bytes' : 'None' }}</code>
+                    <code>{{ testCase.memoryUsageLimit ? (testCase.memoryUsageLimit | humanReadableMemory) : 'None' }}</code>
                   </div>
                 </div>
               </div>

@@ -2,10 +2,10 @@ import { Module } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserController } from './user.controller';
 import { MongooseModule } from '@nestjs/mongoose';
-import { User, UserSchema } from '@git-gud/entities';
+import { Submission, SubmissionSchema, User, UserSchema } from '@git-gud/entities';
 
 @Module({
-  imports: [MongooseModule.forFeature([{ name: User.name, schema: UserSchema }])],
+  imports: [MongooseModule.forFeature([{ name: User.name, schema: UserSchema }, {name: Submission.name, schema: SubmissionSchema}])],
   controllers: [UserController],
   providers: [UserService],
 })

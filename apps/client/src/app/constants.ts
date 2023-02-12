@@ -19,6 +19,7 @@ export const PROGRAMMING_LANGUAGES: ProgrammingLanguage[] = [
 #include <limits.h>
 #include <stdlib.h>
 #include <string.h>
+
 int main(void) {
   char text[64];
   scanf("%s", text);

@@ -94,7 +94,7 @@ export class SubmissionService {
         ),
         takeWhile(
           ({ data: { submissions } }) =>
-            submissions.every(
+            submissions.some(
               (submission) =>
                 submission.status.id === Judge0SubmissionStatus.InQueue ||
                 submission.status.id === Judge0SubmissionStatus.Processing
@@ -117,7 +117,7 @@ export class SubmissionService {
           output: submissionResponse.stdout ? Buffer.from(submissionResponse.stdout, 'base64').toString('utf8') : null,
           stderr: submissionResponse.stderr ? Buffer.from(submissionResponse.stderr, 'base64').toString('utf8') : null,
           compileOutput: submissionResponse.compile_output
-            ? decodeURIComponent(Buffer.from(submissionResponse.compile_output, 'base64').toString('utf8'))
+            ? Buffer.from(submissionResponse.compile_output, 'base64').toString('utf8')
             : null,
           cpuTimeLimitExceeded: testCases[index].cpuTimeLimit
             ? Number(submissionResponse.time) > testCases[index].cpuTimeLimit

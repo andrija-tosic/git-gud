@@ -4,7 +4,7 @@ import { Component, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Problem, ProgrammingLanguage, Submission, User } from '@git-gud/entities';
 import { ConfirmationService, MessageService } from 'primeng/api';
-import { BehaviorSubject, combineLatest, filter, map, Observable, Subject, takeUntil, tap } from 'rxjs';
+import { BehaviorSubject, combineLatest, filter, Subject, take, takeUntil, tap } from 'rxjs';
 import { CODEMIRROR_THEME, PROGRAMMING_LANGUAGES } from '../../constants';
 
 import { ProblemService, Solution } from '../../services/problem.service'; // TODO........
@@ -62,14 +62,17 @@ export class ProblemComponent implements OnDestroy {
     this.route.paramMap.subscribe((paramMap) => {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const id = paramMap.get('id')!;
-      this.problemService.getProblem(id).subscribe((problem) => {
-        this.problem$.next(problem);
-      });
 
-      this.problemService.problemSolutions(id).subscribe((solutions) => {
-        this.solutions$.next(solutions);
-        this.selectedSolution$.next(solutions[0]);
-      });
+      this.userService.loggedInUser$
+        .pipe(
+          filter((user) => !!user),
+          take(1)
+        )
+        .subscribe((user) => {
+          this.problemService.getProblemWithUserSubmissions(id, user!._id!).subscribe((problem) => {
+            this.problem$.next(problem);
+          });
+        });
 
       this.selectedSolution$
         .pipe(
@@ -92,9 +95,7 @@ export class ProblemComponent implements OnDestroy {
 
         this.changeCodeTemplate(problem!, user!, selectedLanguage);
 
-        const userSubmission = problem?.submissions?.find((s) => {
-          return s.author === user!._id && s.programmingLanguage === selectedLanguage.id;
-        });
+        const userSubmission = problem?.submissions?.find((s) => s.programmingLanguage === selectedLanguage.id);
 
         this.currentSubmission$.next(userSubmission);
       });
@@ -125,33 +126,22 @@ export class ProblemComponent implements OnDestroy {
   ) {
     this.loading = true;
 
-    if (currentSubmission) {
-      this.problemService
-        .updateSubmission(currentSubmission._id, {
-          problem: problem._id,
-          author: user._id!,
-          code: this.code,
-          programmingLanguage: selectedLanguage.id,
-        })
-        .subscribe((submission) => {
-          this.currentSubmission$.next(submission);
+    const submissionDto = {
+      problem: problem._id,
+      author: user._id!,
+      code: this.code,
+      programmingLanguage: selectedLanguage.id,
+    };
 
-          this.loading = false;
-        });
-    } else {
-      this.problemService
-        .createSubmission({
-          problem: problem._id,
-          author: user._id!,
-          code: this.code,
-          programmingLanguage: selectedLanguage.id,
-        })
-        .subscribe((submission) => {
-          this.currentSubmission$.next(submission);
+    const createOrUpdateCall = currentSubmission
+      ? this.problemService.updateSubmission(currentSubmission._id, submissionDto)
+      : this.problemService.createSubmission(submissionDto);
 
-          this.loading = false;
-        });
-    }
+    createOrUpdateCall.subscribe((submission) => {
+      this.currentSubmission$.next(submission);
+
+      this.loading = false;
+    });
   }
 
   deleteProblem(problem: Problem) {
@@ -178,6 +168,15 @@ export class ProblemComponent implements OnDestroy {
         });
       },
     });
+  }
+
+  onTabViewIndexChange(index: number, problem: Problem) {
+    if (index === 1) {
+      this.problemService.problemSolutions(problem._id).subscribe((solutions) => {
+        this.solutions$.next(solutions);
+        this.selectedSolution$.next(solutions[0]);
+      });
+    }
   }
 
   ngOnDestroy() {
