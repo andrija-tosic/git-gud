@@ -33,5 +33,12 @@ npx nx serve client
 
 2. ```andrijatosic@elfak.rs```
 
+![screenshot](./images/img1.png "Screenshot")
+![screenshot](./images/img5.png "Screenshot")
+![screenshot](./images/img2.png "Screenshot")
+![screenshot](./images/img3.png "Screenshot")
+![screenshot](./images/img4.png "Screenshot")
+
+
 ## Reference
 [1] <a name="judg0ref" href="https://github.com/judge0/judge0">Judge0 — Open source rešenje za online izvršenje programskog koda</a>

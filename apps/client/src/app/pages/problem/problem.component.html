@@ -110,7 +110,7 @@
                 </div>
 
                 <ng-container *ngIf="this.currentSubmission$ | async as currentSubmission; else noSubmission">
-                  <git-gud-test-results [testResults]="currentSubmission.testResults"></git-gud-test-results>
+                  <git-gud-test-results [testResults]="currentSubmission.testResults" [loading]="loading"></git-gud-test-results>
 
                 </ng-container>
                 <ng-template #noSubmission>
@@ -179,7 +179,7 @@
                       [options]="this.codemirrorOptionsSolution"
                     ></ngx-codemirror>
 
-                    <git-gud-test-results [testResults]="$any(vm.selectedSolution.testResults)"></git-gud-test-results>
+                    <git-gud-test-results [testResults]="$any(vm.selectedSolution.testResults)" [loading]="loading"></git-gud-test-results>
                     <ng-template #noSubmission
                       ><h3>No code submitted in {{ selectedLanguage.name }} yet.</h3></ng-template
                     >
