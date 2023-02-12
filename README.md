@@ -1,7 +1,6 @@
-# ```git-gud```
-## MongoDB projekat
+# ```git-gud``` — MongoDB projekat
 
-### Andrija Tošić 18015
+Andrija Tošić 18015
 
 # Pokretanje
 ## Docker compose za Judge0<sup>[[1]](#judge0ref)</sup>
@@ -12,6 +11,14 @@ sleep 5
 docker-compose up -d
 sleep 10
 ```
+## Napomene
+
+Ukoliko je port `2358` (na kome se pristupa Judge0 API-ju) blokiran ili ima permission error na Windows-u, izvršenje sledećih naredbi (kao administrator) rešava problem:
+
+`net stop winnat`
+
+`net start winnat`
+
 ## NestJS API i Angular klijentska aplikacija
 ```
 npm install
