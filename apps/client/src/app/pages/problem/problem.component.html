@@ -1,5 +1,6 @@
 <ng-container *ngIf="this.problem$ | async as problem">
   <ng-container *ngIf="this.user$ | async as user">
+  <ng-container *ngIf="this.languages$ |async as languages">
     <div class="card">
       <p-tabView styleClass="tabview-custom" (activeIndexChange)="onTabViewIndexChange($event, problem)">
         <p-tabPanel>
@@ -22,11 +23,7 @@
                   (click)="this.router.navigate(['/problem-submit/' + problem._id])"
                 ></button>
 
-                <p-confirmDialog
-                  [style]="{ width: '50vw' }"
-                  [baseZIndex]="10000"
-                  rejectButtonStyleClass="p-button-text"
-                ></p-confirmDialog>
+                <git-gud-confirm-dialog></git-gud-confirm-dialog>
                 <button
                   pButton
                   (click)="deleteProblem(problem)"
@@ -72,7 +69,7 @@
                     [disabled]="loading"
                     [options]="languages"
                     [ngModel]="selectedLanguage$ | async"
-                    (ngModelChange)="this.selectedLanguage$.next($event); changeCodeTemplate(problem, user, $event)"
+                    (ngModelChange)="this.selectedLanguage$.next($event); changeCodeTemplate(problem, $event, languages)"
                     optionLabel="name"
                   >
                   </p-dropdown>
@@ -182,7 +179,7 @@
                       [options]="this.codemirrorOptionsSolution"
                     ></ngx-codemirror>
 
-                    <git-gud-test-results [testResults]="$any(vm.selectedSolution?.testResults)"></git-gud-test-results>
+                    <git-gud-test-results [testResults]="$any(vm.selectedSolution.testResults)"></git-gud-test-results>
                     <ng-template #noSubmission
                       ><h3>No code submitted in {{ selectedLanguage.name }} yet.</h3></ng-template
                     >
@@ -195,4 +192,4 @@
       </p-tabView>
     </div>
   </ng-container>
-</ng-container>
+</ng-container></ng-container>

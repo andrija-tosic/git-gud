@@ -35,6 +35,8 @@ import { ArrayAveragePipe } from './pipes/array-average.pipe';
 import { ChipModule } from 'primeng/chip';
 import { TestResultsComponent } from './components/test-result/test-results.component';
 import { HumanReadableMemoryPipe } from './pipes/human-readable-memory.pipe';
+import { ConfirmDialogComponent } from './components/confirm-dialog/confirm-dialog.component';
+import { AutoFocusModule } from 'primeng/autofocus';
 
 @NgModule({
   declarations: [
@@ -53,6 +55,7 @@ import { HumanReadableMemoryPipe } from './pipes/human-readable-memory.pipe';
     ArrayAveragePipe,
     TestResultsComponent,
     HumanReadableMemoryPipe,
+    ConfirmDialogComponent,
   ],
   imports: [
     BrowserModule,
@@ -75,6 +78,7 @@ import { HumanReadableMemoryPipe } from './pipes/human-readable-memory.pipe';
     ToastModule,
     TabViewModule,
     ChipModule,
+    AutoFocusModule,
   ],
   providers: [],
   bootstrap: [AppComponent],

@@ -1,6 +1,7 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, HttpStatus, Res } from '@nestjs/common';
 import { ProblemService } from './problem.service';
 import { CreateProblemDto, UpdateProblemDto, ProblemSearchFilters } from '@git-gud/entities';
+import { Response } from 'express';
 
 @Controller('problems')
 export class ProblemController {
@@ -15,7 +16,7 @@ export class ProblemController {
   findOne(@Param('id') id: string) {
     return this.problemService.findOne(id);
   }
-  
+
   @Get(':id/:userId')
   findOneWithUserSubmissions(@Param('id') id: string, @Param('userId') userId: string) {
     return this.problemService.findOneWithUserSubmissions(id, userId);
@@ -37,7 +38,12 @@ export class ProblemController {
   }
 
   @Post('/search/random')
-  randomProblem(@Body() searchFilters: ProblemSearchFilters) {
-    return this.problemService.randomProblem(searchFilters);
+  async randomProblem(@Body() searchFilters: ProblemSearchFilters, @Res() res: Response) {
+    const problem = await this.problemService.randomProblem(searchFilters);
+    if (!problem) {
+      res.status(HttpStatus.NOT_FOUND).send();
+    } else {
+      res.send(problem);
+    }
   }
 }

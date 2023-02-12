@@ -41,7 +41,7 @@ export class UserService {
 
   register(createUserDto: CreateUserDto): Observable<User> {
     return this.http
-      .post<User>(API_URL + '/users/register', createUserDto, HTTP_OPTIONS)
+      .post<User>(API_URL + '/users', createUserDto, HTTP_OPTIONS)
       .pipe(tap((user) => this.loggedInUser$.next(user)));
   }
 

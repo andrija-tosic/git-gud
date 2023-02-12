@@ -91,7 +91,7 @@ export class ProblemService {
 
     aggregateArgs.push({ $match: filterQuery });
 
-    return this.problemModel.aggregate(aggregateArgs).limit(50).exec();
+    return this.problemModel.aggregate<Problem>(aggregateArgs).limit(50).exec();
   }
 
   async randomProblem(searchFilters: ProblemSearchFilters) {
@@ -100,7 +100,7 @@ export class ProblemService {
       searchFilters.difficulties?.length === 0 &&
       searchFilters.tags?.length === 0
     ) {
-      return (await this.problemModel.aggregate().sample(1).exec())[0] as Promise<Problem>;
+      return (await this.problemModel.aggregate<Problem>().sample(1).exec())[0];
     }
 
     const filterQuery: FilterQuery<unknown> = {};
@@ -131,7 +131,11 @@ export class ProblemService {
 
     aggregateArgs.push({ $match: filterQuery });
 
-    const problem = (await this.problemModel.aggregate(aggregateArgs).sample(1).exec())[0] as Problem;
+    const problem = (await this.problemModel.aggregate<Problem>(aggregateArgs).sample(1).exec())[0];
+
+    if (!problem) {
+      return null;
+    }
 
     const submissions = await this.submissionModel.find({ problem: new Types.ObjectId(problem._id) });
 

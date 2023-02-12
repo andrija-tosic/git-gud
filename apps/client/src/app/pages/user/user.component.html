@@ -1,3 +1,5 @@
+<git-gud-confirm-dialog></git-gud-confirm-dialog>
+
 <p-toast position="bottom-right" (onClose)="this.messageService.clear()" [baseZIndex]="5000">
   <ng-template let-message pTemplate="message">
     <div class="flex flex-column" style="flex: 1">
@@ -47,6 +49,16 @@
           (click)="onDeleteClick(user._id!)"
         ></button>
       </ng-container>
+
+      <ng-container *ngIf="this.editing">
+        <button
+          pButton
+          class="p-button-outlined"
+          label="Cancel"
+          (click)="this.editing = !this.editing"
+        ></button>
+      </ng-container>
+
     </div>
   </div>
 </ng-container>

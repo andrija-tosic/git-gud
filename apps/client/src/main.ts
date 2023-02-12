@@ -11,6 +11,7 @@ import 'codemirror/addon/hint/css-hint';
 import 'codemirror/addon/hint/html-hint';
 import "codemirror/mode/clike/clike"
 import "codemirror/mode/javascript/javascript"
+import "codemirror/mode/python/python"
 
 platformBrowserDynamic()
   .bootstrapModule(AppModule)

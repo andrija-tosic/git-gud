@@ -22,6 +22,12 @@ export class LoginComponent {
 
       this.userService.login(this.email).subscribe({
         next: () => {
+          this.messageService.add({
+            severity: 'info',
+            summary: 'Logged in',
+            detail: `Logged in with email ${this.email}`,
+          });
+
           this.router.navigate(['/']);
         },
         error: (err) => {

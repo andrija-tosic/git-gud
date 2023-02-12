@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { Component } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { MessageService } from 'primeng/api';
+import { ConfirmationService, MessageService } from 'primeng/api';
 import { UserService } from '../../services/user.service';
 
 @Component({
-  providers: [MessageService],
+  providers: [ConfirmationService, MessageService],
   selector: 'git-gud-user',
   templateUrl: './user.component.html',
 })
@@ -21,6 +21,7 @@ export class UserComponent {
     private userService: UserService,
     private route: ActivatedRoute,
     public messageService: MessageService,
+    private confirmationService: ConfirmationService,
     private router: Router
   ) {
     this.route.paramMap.subscribe((paramMap) => {
@@ -58,9 +59,19 @@ export class UserComponent {
   }
 
   onDeleteClick(id: string) {
-    this.userService.delete(id).subscribe((_) => {
-      this.router.navigate(['/register']);
+    this.confirmationService.confirm({
+      message: `Are you sure you want to delete your account?`,
+      header: 'Delete Confirmation',
+      icon: 'pi pi-info-circle',
+      accept: () => {
+        this.messageService.add({ severity: 'info', summary: 'Confirmed', detail: 'Account deleted' });
+        this.userService.delete(id).subscribe((_) => {
+          this.router.navigate(['/register']);
+        });
+          },
     });
+
+
   }
 
   logout() {

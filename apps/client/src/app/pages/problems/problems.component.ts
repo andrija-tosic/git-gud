@@ -2,6 +2,7 @@ import { Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { Difficulty, Problem, ProblemSearchFilters, Tag } from '@git-gud/entities';
 import { BehaviorSubject, combineLatest, debounceTime, distinctUntilChanged, map, Subject, takeUntil } from 'rxjs';
+import { TAGS } from '../../constants';
 import { ProblemService } from '../../services/problem.service';
 
 @Component({
@@ -16,19 +17,7 @@ export class ProblemsComponent implements OnDestroy {
 
   problems$ = new BehaviorSubject<Problem[]>([]);
 
-  tags = [
-    { name: 'Array', value: 'Array' },
-    { name: 'String', value: 'String' },
-    { name: 'Hash Table', value: 'Hash Table' },
-    { name: 'Dynamic Programming', value: 'Dynamic Programming' },
-    { name: 'Math', value: 'Math' },
-    { name: 'Sorting', value: 'Sorting' },
-    { name: 'Greedy', value: 'Greedy' },
-    { name: 'Graph Search', value: 'Graph Search' },
-    { name: 'Binary Search', value: 'Binary Search' },
-    { name: 'Tree', value: 'Tree' },
-    { name: 'Martix', value: 'Matrix' },
-  ];
+  tags = TAGS;
 
   difficulties = [
     { name: 'Easy', value: 0 },

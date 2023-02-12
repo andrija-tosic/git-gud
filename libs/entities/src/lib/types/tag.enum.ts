@@ -10,4 +10,5 @@ export enum Tag {
   BinarySearch = 'Binary Search',
   Tree = 'Tree',
   Martix = 'Martix',
+  Stack = 'Stack'
 }

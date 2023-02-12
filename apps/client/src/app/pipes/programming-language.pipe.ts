@@ -5,7 +5,7 @@ import { PROGRAMMING_LANGUAGES } from '../constants';
   name: 'programmingLanguage',
 })
 export class ProgrammingLanguagePipe implements PipeTransform {
-  transform(id: number, ...args: unknown[]): string {
+  transform(id: number): string {
     // TODO.......
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion

@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MessageService } from 'primeng/api';
-import { CODEMIRROR_THEME, PROGRAMMING_LANGUAGES } from '../constants';
+import { CODEMIRROR_THEME, PROGRAMMING_LANGUAGES, TAGS } from '../constants';
 import { ProblemService } from '../services/problem.service';
 
 @Component({
@@ -24,19 +24,7 @@ export class ProblemSubmitComponent {
     lineWrapping: true,
   };
 
-  tags = [
-    { name: 'Array', value: 'Array' },
-    { name: 'String', value: 'String' },
-    { name: 'Hash Table', value: 'Hash Table' },
-    { name: 'Dynamic Programming', value: 'Dynamic Programming' },
-    { name: 'Math', value: 'Math' },
-    { name: 'Sorting', value: 'Sorting' },
-    { name: 'Greedy', value: 'Greedy' },
-    { name: 'Graph Search', value: 'Graph Search' },
-    { name: 'Binary Search', value: 'Binary Search' },
-    { name: 'Tree', value: 'Tree' },
-    { name: 'Martix', value: 'Matrix' },
-  ];
+  tags = TAGS;
 
   difficulties = [
     { name: 'Easy', value: 0 },

@@ -1,6 +1,8 @@
 <form (ngSubmit)="onConfirm()" [formGroup]="form">
   <label for="title" class="block text-900 font-medium mb-2">Title</label>
   <input
+    pAutoFocus
+    [autofocus]="true"
     id="title"
     [required]="true"
     formControlName="title"
@@ -140,7 +142,7 @@
     ></button>
   </ng-container>
 
-  <div>
+  <div class="mt-5">
     <button pButton label="Submit"></button>
   </div>
 </form>

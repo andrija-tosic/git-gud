@@ -34,6 +34,12 @@ export class RegisterComponent {
 
       this.userService.register({ email: this.email, name: this.name }).subscribe({
         next: (_person) => {
+          this.messageService.add({
+            severity: 'info',
+            summary: 'Account created',
+            detail: `Account with given email (${this.email}) created`,
+          });
+
           this.router.navigate(['/']);
         },
         error: (err) => {

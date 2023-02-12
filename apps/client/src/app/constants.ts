@@ -10,6 +10,21 @@ export const HTTP_OPTIONS = {
 
 export const CODEMIRROR_THEME = 'night';
 
+export const TAGS = [
+  { name: 'Array', value: 'Array' },
+  { name: 'String', value: 'String' },
+  { name: 'Hash Table', value: 'Hash Table' },
+  { name: 'Dynamic Programming', value: 'Dynamic Programming' },
+  { name: 'Math', value: 'Math' },
+  { name: 'Sorting', value: 'Sorting' },
+  { name: 'Greedy', value: 'Greedy' },
+  { name: 'Graph Search', value: 'Graph Search' },
+  { name: 'Binary Search', value: 'Binary Search' },
+  { name: 'Tree', value: 'Tree' },
+  { name: 'Martix', value: 'Matrix' },
+  { name: 'Stack', value: 'Stack' },
+];
+
 export const PROGRAMMING_LANGUAGES: ProgrammingLanguage[] = [
   {
     id: 50,
@@ -81,24 +96,25 @@ class Main {
   },
   {
     id: 63,
-    name: 'JavaScript',
+    name: 'JavaScript (node)',
     codeTemplate: `
 const fs = require('fs');
-const data = fs.readFileSync(0, 'utf-8');
+const text = fs.readFileSync(0, 'utf-8');
 
-console.log(data);  
+console.log(text);  
 `,
     codemirrorMode: 'text/javascript',
   },
-  //   {
-  //     id: 74,
-  //     name: 'TypeScript',
-  //     codeTemplate: `
-  // const fs = require('fs');
-  // const data = fs.readFileSync(0, 'utf-8');
+  {
+    id: 71,
+    name: "Python",
+    codeTemplate: `
+text = input()
 
-  // console.log(data);
-  // `,
-  //     codemirrorMode: 'text/typescript',
-  //   },
+
+
+print(text)
+    `,
+    codemirrorMode: 'text/x-python'
+  }
 ];

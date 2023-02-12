@@ -4,7 +4,7 @@ import { Component, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Problem, ProgrammingLanguage, Submission, User } from '@git-gud/entities';
 import { ConfirmationService, MessageService } from 'primeng/api';
-import { BehaviorSubject, combineLatest, filter, Subject, take, takeUntil, tap } from 'rxjs';
+import { BehaviorSubject, combineLatest, filter, map, Observable, Subject, take, takeUntil, tap } from 'rxjs';
 import { CODEMIRROR_THEME, PROGRAMMING_LANGUAGES } from '../../constants';
 
 import { ProblemService, Solution } from '../../services/problem.service'; // TODO........
@@ -31,9 +31,9 @@ export class ProblemComponent implements OnDestroy {
 
   loading = false;
 
-  languages: ProgrammingLanguage[] = [...PROGRAMMING_LANGUAGES];
+  languages$ = new BehaviorSubject<ProgrammingLanguage[]>([...PROGRAMMING_LANGUAGES]);
 
-  selectedLanguage$ = new BehaviorSubject<ProgrammingLanguage>(this.languages[0]);
+  selectedLanguage$ = new BehaviorSubject(PROGRAMMING_LANGUAGES[0]);
 
   codemirrorOptions = {
     lineNumbers: true,
@@ -41,14 +41,14 @@ export class ProblemComponent implements OnDestroy {
     extraKeys: {
       'Ctrl-Space': 'autocomplete',
     },
-    mode: this.languages[0].name.toLowerCase(),
+    mode: PROGRAMMING_LANGUAGES[0].name.toLowerCase(),
   };
 
   codemirrorOptionsSolution = {
     lineNumbers: true,
     theme: CODEMIRROR_THEME,
     readOnly: true,
-    mode: this.languages[0].name.toLowerCase(),
+    mode: PROGRAMMING_LANGUAGES[0].name.toLowerCase(),
   };
 
   constructor(
@@ -70,6 +70,9 @@ export class ProblemComponent implements OnDestroy {
         )
         .subscribe((user) => {
           this.problemService.getProblemWithUserSubmissions(id, user!._id!).subscribe((problem) => {
+            const languages = PROGRAMMING_LANGUAGES.filter((l) => problem!.programmingLanguagesIds.includes(l.id));
+            this.selectedLanguage$.next(languages[0]);
+
             this.problem$.next(problem);
           });
         });
@@ -88,12 +91,13 @@ export class ProblemComponent implements OnDestroy {
         .subscribe();
     });
 
-    combineLatest([this.problem$, this.user$, this.selectedLanguage$])
-      .pipe(filter((problemAndUser) => !!problemAndUser[0] && !!problemAndUser[1]))
-      .subscribe(([problem, user, selectedLanguage]) => {
-        this.languages = PROGRAMMING_LANGUAGES.filter((l) => problem!.programmingLanguagesIds.includes(l.id));
+    combineLatest([this.problem$, this.selectedLanguage$])
+      .pipe(filter((problemAndLanguage) => !!problemAndLanguage[0] && !!problemAndLanguage[1]))
+      .subscribe(([problem, selectedLanguage]) => {
+        const languages = PROGRAMMING_LANGUAGES.filter((l) => problem!.programmingLanguagesIds.includes(l.id));
+        this.languages$.next(languages);
 
-        this.changeCodeTemplate(problem!, user!, selectedLanguage);
+        this.changeCodeTemplate(problem!, selectedLanguage, languages);
 
         const userSubmission = problem?.submissions?.find((s) => s.programmingLanguage === selectedLanguage.id);
 
@@ -101,15 +105,16 @@ export class ProblemComponent implements OnDestroy {
       });
   }
 
-  changeCodeTemplate(problem: Problem, user: User, selectedLanguage: ProgrammingLanguage) {
-    const userSubmission = problem.submissions?.find((s) => {
-      return s.author === user._id && s.programmingLanguage === selectedLanguage.id;
-    });
+  changeCodeTemplate(problem: Problem, selectedLanguage: ProgrammingLanguage, languages: ProgrammingLanguage[]) {
+    const userSubmission = problem.submissions?.find((s) => s.programmingLanguage === selectedLanguage.id);
 
     if (userSubmission) {
       this.code = userSubmission.code;
     } else {
-      this.code = this.languages.find((l) => l.id === selectedLanguage.id)!.codeTemplate;
+      const language = languages.find((l) => l.id === selectedLanguage.id);
+      if (language) {
+        this.code = language.codeTemplate;
+      }
     }
 
     this.codemirrorOptions = {
@@ -139,6 +144,14 @@ export class ProblemComponent implements OnDestroy {
 
     createOrUpdateCall.subscribe((submission) => {
       this.currentSubmission$.next(submission);
+
+      const index = problem.submissions?.findIndex(s => s.programmingLanguage === selectedLanguage.id);
+
+      if (index) {
+        problem.submissions?.splice(index);
+        problem.submissions?.push(submission);
+        this.problem$.next(problem);
+      }
 
       this.loading = false;
     });

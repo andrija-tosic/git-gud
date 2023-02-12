@@ -7,7 +7,7 @@
     class="p-button-outlined"
     [routerLink]="['/problem-submit']"
   ></button>
-  <h2>Search for problems</h2>
+  <h1>Search for problems</h1>
 
   <h3>Tags</h3>
   <p-selectButton
@@ -74,6 +74,10 @@
           Tags
           <p-sortIcon field="tags"></p-sortIcon>
         </th>
+        <th pSortableColumn="programmingLanguagesIds" style="width: 20%">
+          Languages
+          <p-sortIcon field="programmingLanguagesIds"></p-sortIcon>
+        </th>
       </tr>
     </ng-template>
     <ng-template pTemplate="body" let-problem>
@@ -86,6 +90,11 @@
         <td>{{ problem.difficulty | problemDifficulty }}</td>
         <td>
           <p-chip *ngFor="let tag of problem.tags" [label]="tag" styleClass="mr-2"></p-chip>
+        </td>
+        <td>
+          <span *ngFor="let language of problem.programmingLanguagesIds; let i=index" styleClass="mr-2"
+            >{{(language | programmingLanguage) + (i === problem.programmingLanguagesIds.length-1 ? '' : ', ')}}
+          </span>
         </td>
       </tr>
     </ng-template>

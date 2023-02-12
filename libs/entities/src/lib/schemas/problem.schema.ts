@@ -41,6 +41,5 @@ export class Problem {
 
 export const ProblemSchema = SchemaFactory.createForClass(Problem);
 
-// ProblemSchema.index({ title: 'text' });
 ProblemSchema.index({ difficulty: 1 });
 ProblemSchema.index({ tags: 1 });
